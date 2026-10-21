@@ -62,9 +62,17 @@ html.lenis body {
 .lenis.lenis-stopped {
   overflow: clip;
 }
+/* html/body carry the colour at the bottom of the screen (set by JS): Safari tints its
+   toolbar from it. The page itself is painted sand by <main>. */
+html,
+body {
+  background-color: var(--chrome-bottom, var(--clay));
+}
+main {
+  background-color: var(--sand);
+}
 body {
   margin: 0;
-  background: var(--sand);
   color: var(--earth);
   font-family: var(--f-sans);
   font-size: 16px;
@@ -379,26 +387,32 @@ em {
   padding-top: env(safe-area-inset-top);
   box-sizing: content-box;
   color: var(--earth);
+  /* solid colour on the fixed header itself: Safari tints the status bar from it, so the
+     bar and header read as one surface */
+  background-color: var(--chrome);
   transition:
     transform 0.7s var(--ease),
-    color 0.4s;
+    color 0.4s,
+    background-color 0.5s;
 }
+/* same film grain as the clay sections, so the header doesn't show a seam over them */
 .header::before {
   content: '';
   position: absolute;
   inset: 0;
   z-index: -1;
-  /* solid and identical to theme-color, so the browser bar and header read as one surface */
-  background: var(--chrome);
-  transition:
-    opacity 0.4s,
-    background-color 0.5s;
+  pointer-events: none;
+  background-image: var(--grain);
+  background-size: 220px;
+  mix-blend-mode: overlay;
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+.header.is-grain::before {
+  opacity: 0.4;
 }
 .header.is-dark {
   color: var(--cream);
-}
-.header.is-top::before {
-  opacity: 0;
 }
 .header.is-hidden {
   transform: translateY(-110%);
@@ -452,9 +466,6 @@ em {
 }
 .menu-open .header {
   color: var(--cream);
-}
-.menu-open .header::before {
-  opacity: 0;
 }
 
 @media (min-width: 1000px) {

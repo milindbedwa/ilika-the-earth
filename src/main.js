@@ -80,7 +80,6 @@ function updateHeader() {
   else if (goingUp || y < 140) header.classList.remove('is-hidden');
   lastY = y;
   root.classList.toggle('header-visible', !header.classList.contains('is-hidden'));
-  header.classList.toggle('is-top', y < innerHeight * 0.6);
 
   const probe = header.offsetHeight / 2;
   header.classList.toggle(
@@ -97,12 +96,11 @@ updateHeader();
 /* ---------- browser bars take the colour of the section under the header ---------- */
 const themeMeta = $('meta[name="theme-color"]');
 let chrome = '';
-function sectionColour() {
+// colour of the page at height y: { bg, grain }
+function sectionColour(y) {
   const rotate = $('.rotate');
-  if (getComputedStyle(rotate).display !== 'none') return getComputedStyle(rotate).backgroundColor;
-  if (body.classList.contains('menu-open')) return getComputedStyle($('[data-menu]')).backgroundColor;
-  // sample just below the header, i.e. the content the bar sits against
-  const y = header.classList.contains('is-hidden') ? 1 : header.getBoundingClientRect().bottom + 2;
+  if (getComputedStyle(rotate).display !== 'none') return { bg: getComputedStyle(rotate).backgroundColor, grain: true };
+  if (body.classList.contains('menu-open')) return { bg: getComputedStyle($('[data-menu]')).backgroundColor, grain: true };
   const stack = document.elementsFromPoint(innerWidth / 2, y);
   for (const top of stack) {
     if (top.closest('.header, .cursor, .rotate')) continue;
@@ -114,10 +112,10 @@ function sectionColour() {
         .match(/rgba?\(([^)]+)\)/)?.[1]
         .split(',')
         .map(Number);
-      if (a && (a[3] ?? 1) === 1) return bg;
+      if (a && (a[3] ?? 1) === 1) return { bg, grain: el.classList.contains('grain') };
     }
   }
-  return getComputedStyle(body).backgroundColor;
+  return { bg: getComputedStyle($('main')).backgroundColor, grain: false };
 }
 const toHex = (rgb) =>
   '#' +
@@ -126,13 +124,23 @@ const toHex = (rgb) =>
     .slice(0, 3)
     .map((n) => (+n).toString(16).padStart(2, '0'))
     .join('');
+let chromeBottom = '';
 function updateChrome() {
-  const c = toHex(sectionColour());
-  if (c === chrome) return;
-  chrome = c;
-  themeMeta.content = c;
-  root.style.setProperty('--chrome', c);
-  root.style.backgroundColor = c; // overscroll / rubber-band area
+  // top: the content just below the header (or the very top when it's hidden)
+  const top = sectionColour(header.classList.contains('is-hidden') ? 1 : header.getBoundingClientRect().bottom + 2);
+  const c = toHex(top.bg);
+  header.classList.toggle('is-grain', top.grain);
+  if (c !== chrome) {
+    chrome = c;
+    themeMeta.content = c;
+    root.style.setProperty('--chrome', c);
+  }
+  // bottom: page background behind Safari's toolbar and the overscroll area
+  const b = toHex(sectionColour(innerHeight - 2).bg);
+  if (b !== chromeBottom) {
+    chromeBottom = b;
+    root.style.setProperty('--chrome-bottom', b);
+  }
 }
 let chromeQueued = false;
 const queueChrome = () => {
