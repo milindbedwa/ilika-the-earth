@@ -1733,87 +1733,49 @@ em {
 .location__drive strong {
   font-weight: 600;
 }
+/* full-screen map that sways and breathes very slowly around the ILIKA pin */
 .map {
   display: grid;
   justify-items: center;
-  gap: 36px;
+  gap: 32px;
   margin-bottom: 88px;
-  padding-inline: 8px;
 }
-.map__frame {
+.map__screen {
   position: relative;
-  width: min(100%, 680px);
-  aspect-ratio: 1;
-}
-.map__ring {
-  position: absolute;
-  inset: 0;
   width: 100%;
-  height: 100%;
-  overflow: visible;
-  fill: rgb(241 231 214 / 0.72);
-  font-family: var(--f-sans);
-  font-size: 5.6px;
-  font-weight: 500;
-  letter-spacing: 0.2em;
-  animation: map-turn 140s linear infinite reverse;
-}
-.map__lens {
-  position: absolute;
-  inset: 8%;
-  overflow: hidden; /* clip-path alone still lets the oversized map widen the page */
-  clip-path: circle(50%);
+  height: 100svh;
+  overflow: hidden;
   background: #7d321e;
 }
-.map__lens::after {
-  content: '';
+.map__screen img {
   position: absolute;
   inset: 0;
-  border-radius: 50%;
-  box-shadow:
-    inset 0 0 0 1px rgb(241 231 214 / 0.4),
-    inset 0 0 60px rgb(50 18 8 / 0.35);
-  pointer-events: none;
-}
-/* the map turns about a point the image always covers, with ILIKA's pin inside the circle */
-.map__spin {
-  position: absolute;
-  width: 144.6%;
-  height: 125%;
-  left: -22.3%;
-  top: -25%;
-  transform-origin: 50% 60%;
-  animation: map-turn 240s linear infinite;
-}
-.map__spin img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* keep ILIKA's pin (49% across, 89% down the artwork) in view */
+  object-position: 49% 100%;
+  transform-origin: 49% 89%;
+  animation: map-drift 48s ease-in-out infinite;
+  will-change: transform;
 }
-.map__pin {
+.map__screen::after {
+  content: '';
   position: absolute;
-  left: 49.4%;
-  top: 88.9%;
-  width: 10px;
-  height: 10px;
-  margin: -5px 0 0 -5px;
-  border-radius: 50%;
-  box-shadow: 0 0 0 0 rgb(241 231 214 / 0.7);
-  animation: pin-pulse 2.6s var(--ease) infinite;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 120px rgb(50 18 8 / 0.35);
 }
-.map.is-paused .map__ring,
-.map.is-paused .map__spin {
+.map.is-paused .map__screen img {
   animation-play-state: paused;
 }
-@keyframes map-turn {
-  to {
-    transform: rotate(360deg);
-  }
-}
-@keyframes pin-pulse {
-  80%,
+@keyframes map-drift {
+  0%,
   100% {
-    box-shadow: 0 0 0 22px rgb(241 231 214 / 0);
+    transform: scale(1.16) rotate(-2deg);
+  }
+  50% {
+    transform: scale(1.22) rotate(2deg);
   }
 }
 @media (min-width: 900px) {
