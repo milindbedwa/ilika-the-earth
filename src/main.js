@@ -163,8 +163,10 @@ function intro() {
   const tl = gsap.timeline({ defaults: { ease: EASE } });
   tl.add(writeInk(logo, prepareInk(logo)), 0.35)
     .to('[data-hero-line]', { opacity: 1, y: 0, duration: 1.2 }, '>-0.6')
-    .add(() => body.classList.add('is-ready'), '<')
-    .add(() => lenis?.start(), 1.2);
+    .add(() => {
+      body.classList.add('is-ready');
+      lenis?.start();
+    }, 1.2);
 }
 let started = false;
 const go = () => {
