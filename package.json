@@ -1,0 +1,23 @@
+{
+  "name": "ilika-the-earth",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "images": "node scripts/build-images.mjs",
+    "predev": "npm run images",
+    "dev": "vite",
+    "prebuild": "npm run images",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "gsap": "^3.15.0",
+    "lenis": "^1.3.27"
+  },
+  "devDependencies": {
+    "sharp": "^0.35.5",
+    "svgo": "^4.1.0",
+    "vite": "^8.3.5"
+  }
+}

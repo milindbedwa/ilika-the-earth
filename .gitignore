@@ -1,0 +1,8 @@
+node_modules
+dist
+.vercel
+.DS_Store
+# generated from /images by scripts/build-images.mjs
+public/img
+public/og.jpg
+src/image-manifest.json
