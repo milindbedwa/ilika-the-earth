@@ -16,6 +16,7 @@ const mm = gsap.matchMedia();
 const EASE = 'expo.out';
 
 /* ---------- smooth scroll ---------- */
+scrollTo(0, 0);
 let lenis = null;
 if (motion) {
   lenis = new Lenis({ lerp: 0.09, wheelMultiplier: 0.95, anchors: false });
@@ -58,7 +59,13 @@ document.addEventListener('click', (e) => {
   const wasOpen = body.classList.contains('menu-open');
   if (wasOpen) setMenu(false);
   setTimeout(() => scrollToTarget(target), wasOpen ? 450 : 0);
-  history.replaceState(null, '', a.getAttribute('href'));
+});
+
+// Returning via the back button (page restored from cache) also starts at the cover
+addEventListener('pageshow', (e) => {
+  if (!e.persisted) return;
+  if (lenis) lenis.scrollTo(0, { immediate: true });
+  else scrollTo(0, 0);
 });
 
 /* ---------- header: hide on scroll down, adapt over dark sections ---------- */

@@ -23,6 +23,9 @@
     />
     <script>
       document.documentElement.classList.add('js');
+      // Always open on the cover: no restored scroll position, no jump to a #section
+      history.scrollRestoration = 'manual';
+      if (location.hash) history.replaceState(null, '', location.pathname + location.search);
       if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('motion');
     </script>
   </head>
