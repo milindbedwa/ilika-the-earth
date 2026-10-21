@@ -34,7 +34,11 @@ function ilikaHtml() {
         });
 
         html = html.replace(/<i\b([^>]*?)\bdata-svg="([^"]+)"([^>]*)><\/i\s*>/g, (m, a, name, b) => {
-          const svg = fs.readFileSync(path.join(svgDir, `${name}.svg`), 'utf8').trim();
+          // "ph/<icon>" → Phosphor light icon from node_modules, otherwise a file in src/svg
+          const file = name.startsWith('ph/')
+            ? path.join(root, 'node_modules/@phosphor-icons/core/assets/light', `${name.slice(3)}-light.svg`)
+            : path.join(svgDir, `${name}.svg`);
+          const svg = fs.readFileSync(file, 'utf8').trim();
           const cls = attr(`${a} ${b}`, 'class');
           const label = attr(`${a} ${b}`, 'aria-label');
           const a11y = label ? `role="img" aria-label="${label}"` : 'aria-hidden="true" focusable="false"';

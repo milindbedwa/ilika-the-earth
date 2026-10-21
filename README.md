@@ -44,7 +44,7 @@ Vector artwork (logo, icons, ground-floor plan, master plan) is in `src/svg` and
 All copy is in [`index.html`](index.html). Shorthand used there:
 
 - `<img data-pic="name" alt="…" sizes="…">` — a photo from `/images` (expanded at build time into a responsive `<img>`). Add `data-parallax` for scroll parallax, `data-eager` for above-the-fold images.
-- `<i data-svg="icons/spiral"></i>` — inlines an SVG from `src/svg` (takes the text colour).
+- `<i data-svg="ph/sun"></i>` — inlines a [Phosphor](https://phosphoricons.com) light icon (browse the site for names); `<i data-svg="logo"></i>` inlines a file from `src/svg`. Both take the text colour.
 - `data-split` (line reveal), `data-fade`, `data-stagger` (children), `data-reveal` (image wipe), `data-words` (word-by-word scrub).
 
 ## Before launch
