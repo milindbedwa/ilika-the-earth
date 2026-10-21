@@ -681,7 +681,8 @@ em {
   position: relative;
   display: grid;
   justify-items: center;
-  gap: 28px;
+  gap: clamp(56px, 13vh, 130px);
+  margin-top: clamp(40px, 9vh, 90px);
 }
 .hero__logo svg {
   width: clamp(190px, 50vw, 300px);
@@ -691,53 +692,10 @@ em {
 .hero__kicker {
   opacity: 0.85;
 }
-.hero__foot {
-  position: absolute;
-  left: var(--gutter);
-  right: var(--gutter);
-  bottom: calc(22px + env(safe-area-inset-bottom));
-  display: flex;
-  justify-content: flex-end;
-  align-items: flex-end;
-  opacity: 0.85;
-}
-.hero__scroll {
-  display: grid;
-  justify-items: end;
-  gap: 10px;
-}
-.hero__scroll-line {
-  width: 1px;
-  height: 48px;
-  background: rgb(241 231 214 / 0.3);
-  position: relative;
-  overflow: hidden;
-}
-.hero__scroll-line::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--cream);
-  animation: scrollcue 2.2s var(--ease-in-out) infinite;
-}
-@keyframes scrollcue {
-  0% {
-    transform: translateY(-100%);
-  }
-  60%,
-  100% {
-    transform: translateY(100%);
-  }
-}
-
-/* intro sequence (JS adds .is-loaded) */
-.motion .hero__logo svg {
-  -webkit-mask-image: linear-gradient(100deg, #000 45%, transparent 55%);
-  mask-image: linear-gradient(100deg, #000 45%, transparent 55%);
-  -webkit-mask-size: 260% 100%;
-  mask-size: 260% 100%;
-  -webkit-mask-position: 100% 0;
-  mask-position: 100% 0;
+/* intro sequence: logos are written in by JS (see writeInk in main.js) */
+.motion .hero__logo svg,
+.motion .footer__logo svg {
+  visibility: hidden;
 }
 .motion [data-hero-line] {
   opacity: 0;
@@ -1044,22 +1002,17 @@ em {
 /* ==========================================================================
    Materials + benefits
    ========================================================================== */
-.materials {
-  padding-block: var(--sec) 0;
-}
 .materials__grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 18px 12px;
-}
-.materials__grid li {
-  display: grid;
-  gap: 10px;
+  gap: 12px;
+  margin-bottom: 88px;
 }
 @media (min-width: 900px) {
   .materials__grid {
     grid-template-columns: repeat(4, 1fr);
-    gap: 28px 16px;
+    gap: 16px;
+    margin-bottom: 160px;
   }
   .materials__grid li:nth-child(even) {
     transform: translateY(48px);
@@ -1194,32 +1147,35 @@ em {
 }
 .leisure {
   display: grid;
-  gap: 48px;
-  padding-bottom: var(--sec);
+  gap: 32px;
+  padding-block: var(--sec);
+}
+.leisure__title {
+  color: var(--clay);
 }
 .leisure__img {
   aspect-ratio: 4 / 5;
-  margin-inline: var(--gutter);
-}
-.leisure__copy {
-  display: grid;
-  gap: 24px;
-}
-.leisure__copy .h-1 {
-  color: var(--clay);
 }
 @media (min-width: 900px) {
   .leisure {
     grid-template-columns: 40% 1fr;
-    align-items: center;
-    gap: 7vw;
+    grid-template-rows: 1fr auto 1fr;
+    column-gap: 7vw;
+    row-gap: 28px;
   }
   .leisure__img {
-    margin: 0;
+    grid-column: 1;
+    grid-row: 1 / 4;
     aspect-ratio: 3 / 4.4;
   }
-  .leisure__copy {
-    padding-left: 0;
+  .leisure__title {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .leisure__text {
+    grid-column: 2;
+    grid-row: 3;
+    align-self: start;
   }
 }
 
@@ -1475,7 +1431,7 @@ em {
   display: flex;
   justify-content: space-between;
   gap: 16px;
-  padding: 11px 0;
+  padding: 8px 0;
   border-bottom: 1px solid var(--line-light);
 }
 .plan__legend dt span {
@@ -1705,45 +1661,88 @@ em {
   font-weight: 600;
 }
 .map {
+  display: grid;
+  justify-items: center;
+  gap: 36px;
+  margin-bottom: 88px;
+  padding-inline: 8px;
+}
+.map__frame {
   position: relative;
-  margin-bottom: 72px;
+  width: min(100%, 680px);
+  aspect-ratio: 1;
 }
-.map__scroller {
-  overflow-x: auto;
-  scrollbar-width: none;
-  overscroll-behavior-x: contain;
-  cursor: grab;
-}
-.map__scroller::-webkit-scrollbar {
-  display: none;
-}
-.map__scroller img {
-  width: 220vw;
-  max-width: none;
-  height: auto;
-}
-.map__cta {
+.map__ring {
   position: absolute;
-  right: var(--gutter);
-  bottom: 16px;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: rgb(241 231 214 / 0.72);
+  font-family: var(--f-sans);
+  font-size: 5.6px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  animation: map-turn 140s linear infinite reverse;
+}
+.map__lens {
+  position: absolute;
+  inset: 8%;
+  clip-path: circle(50%);
+  background: #7d321e;
+}
+.map__lens::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow:
+    inset 0 0 0 1px rgb(241 231 214 / 0.4),
+    inset 0 0 60px rgb(50 18 8 / 0.35);
+  pointer-events: none;
+}
+/* the map turns about a point the image always covers, with ILIKA's pin inside the circle */
+.map__spin {
+  position: absolute;
+  width: 144.6%;
+  height: 125%;
+  left: -22.3%;
+  top: -25%;
+  transform-origin: 50% 60%;
+  animation: map-turn 240s linear infinite;
+}
+.map__spin img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.map__pin {
+  position: absolute;
+  left: 49.4%;
+  top: 88.9%;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgb(241 231 214 / 0.7);
+  animation: pin-pulse 2.6s var(--ease) infinite;
+}
+.map.is-paused .map__ring,
+.map.is-paused .map__spin {
+  animation-play-state: paused;
+}
+@keyframes map-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes pin-pulse {
+  80%,
+  100% {
+    box-shadow: 0 0 0 22px rgb(241 231 214 / 0);
+  }
 }
 @media (min-width: 900px) {
-  .map {
-    max-width: var(--max);
-    margin-inline: auto;
-    padding-inline: var(--gutter);
-  }
-  .map__scroller {
-    overflow: hidden;
-    cursor: default;
-  }
-  .map__scroller img {
-    width: 100%;
-  }
-  .map__cta {
-    right: calc(var(--gutter) + 24px);
-    bottom: 24px;
-  }
   .location__copy {
     grid-template-columns: 1fr 1fr;
     column-gap: 6vw;

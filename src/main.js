@@ -98,21 +98,73 @@ $$('.header__nav a').forEach((a) => {
   });
 });
 
+/* ---------- logo written by an invisible pen ---------- */
+// Each stroke in src/svg/logo.svg carries its traced centre line (data-pen). A white
+// pen line in a mask draws along it, so the ink appears in writing order.
+let inkCount = 0;
+function prepareInk(svg) {
+  const NS = 'http://www.w3.org/2000/svg';
+  const defs = document.createElementNS(NS, 'defs');
+  const vb = svg.viewBox.baseVal;
+  svg.prepend(defs);
+  const pens = [];
+  $$('path[data-pen]', svg).forEach((fill) => {
+    const mask = document.createElementNS(NS, 'mask');
+    mask.id = `ink-${++inkCount}`;
+    mask.setAttribute('maskUnits', 'userSpaceOnUse');
+    Object.entries({ x: vb.x, y: vb.y, width: vb.width, height: vb.height }).forEach(([k, v]) => mask.setAttribute(k, v));
+    fill.dataset.pen.split(/(?=M)/).forEach((d) => {
+      const pen = document.createElementNS(NS, 'path');
+      pen.setAttribute('d', d.trim());
+      pen.setAttribute('fill', 'none');
+      pen.setAttribute('stroke', '#fff');
+      pen.setAttribute('stroke-width', fill.dataset.penW);
+      pen.setAttribute('stroke-linecap', 'round');
+      pen.setAttribute('stroke-linejoin', 'round');
+      pen.style.visibility = 'hidden';
+      mask.append(pen);
+      defs.append(mask);
+      const len = pen.getTotalLength();
+      pen.style.strokeDasharray = `${len} ${len + 1}`;
+      pen.style.strokeDashoffset = len;
+      pens.push({ pen, len });
+    });
+    fill.setAttribute('mask', `url(#${mask.id})`);
+  });
+  svg.style.visibility = 'visible';
+  return pens;
+}
+function writeInk(svg, pens, speed = 160) {
+  const tl = gsap.timeline({
+    onComplete: () => $$('[mask]', svg).forEach((f) => f.removeAttribute('mask')),
+  });
+  pens.forEach(({ pen, len }, i) =>
+    tl.to(
+      pen,
+      {
+        strokeDashoffset: 0,
+        duration: Math.max(0.1, len / speed),
+        ease: 'sine.inOut',
+        onStart: () => (pen.style.visibility = 'visible'),
+      },
+      i ? '>-0.02' : 0,
+    ),
+  );
+  return tl;
+}
+
 /* ---------- hero intro ---------- */
 function intro() {
   const logo = $('.hero__logo svg');
-  const tl = gsap.timeline({
-    defaults: { ease: EASE },
-    onComplete: () => lenis?.start(),
-  });
   if (!motion) {
     body.classList.add('is-ready');
     return;
   }
-  tl.to(logo, { maskPosition: '0% 0', webkitMaskPosition: '0% 0', duration: 2.1, ease: 'power2.inOut' }, 0.25)
-    .fromTo(logo, { y: 18 }, { y: 0, duration: 2.2 }, 0.25)
-    .to('[data-hero-line]', { opacity: 1, y: 0, duration: 1.2, stagger: 0.12 }, 1.6)
-    .add(() => body.classList.add('is-ready'), 1.5);
+  const tl = gsap.timeline({ defaults: { ease: EASE } });
+  tl.add(writeInk(logo, prepareInk(logo)), 0.35)
+    .to('[data-hero-line]', { opacity: 1, y: 0, duration: 1.2 }, '>-0.6')
+    .add(() => body.classList.add('is-ready'), '<')
+    .add(() => lenis?.start(), 1.2);
 }
 let started = false;
 const go = () => {
@@ -357,45 +409,16 @@ if (mp) {
   if (finePointer) mp.addEventListener('mouseleave', () => setPlot(null));
 }
 
-/* ---------- map ---------- */
+/* ---------- map: turns slowly, paused while off screen ---------- */
 const map = $('[data-map]');
-if (map) {
-  const scroller = $('[data-map-scroller]', map);
-  const img = $('[data-map-img]', map);
-  // ILIKA's pin sits ~49% across the illustrated map — start the swipeable map there
-  const centre = () => {
-    if (scroller.scrollWidth > scroller.clientWidth) scroller.scrollLeft = img.offsetWidth * 0.49 - scroller.clientWidth / 2;
-  };
-  img.complete ? centre() : img.addEventListener('load', centre, { once: true });
-  addEventListener('resize', centre);
+if (map && 'IntersectionObserver' in window)
+  new IntersectionObserver(([e]) => map.classList.toggle('is-paused', !e.isIntersecting)).observe(map);
 
-  mm.add('(min-width: 900px) and (prefers-reduced-motion: no-preference)', () => {
-    gsap.fromTo(
-      img,
-      { scale: 1.18, transformOrigin: '49% 88%' },
-      { scale: 1, ease: 'none', scrollTrigger: { trigger: map, start: 'top bottom', end: 'center center', scrub: true } },
-    );
-  });
-}
-
-/* ---------- footer logo writes itself in ---------- */
+/* ---------- footer logo is written in when it scrolls into view ---------- */
 const footLogo = $('[data-footer-logo] svg');
 if (footLogo && motion) {
-  gsap.set(footLogo, {
-    maskImage: 'linear-gradient(100deg, #000 45%, transparent 55%)',
-    webkitMaskImage: 'linear-gradient(100deg, #000 45%, transparent 55%)',
-    maskSize: '260% 100%',
-    webkitMaskSize: '260% 100%',
-    maskPosition: '100% 0',
-    webkitMaskPosition: '100% 0',
-  });
-  gsap.to(footLogo, {
-    maskPosition: '0% 0',
-    webkitMaskPosition: '0% 0',
-    duration: 2.2,
-    ease: 'power2.inOut',
-    scrollTrigger: { trigger: footLogo, start: 'top 85%', once: true },
-  });
+  const pens = prepareInk(footLogo);
+  ScrollTrigger.create({ trigger: footLogo, start: 'top 82%', once: true, onEnter: () => writeInk(footLogo, pens) });
 }
 
 /* ---------- enquiry form → prefilled email ---------- */
