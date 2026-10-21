@@ -39,6 +39,14 @@ All photos live in [`/images`](images). On every build, `scripts/build-images.mj
 
 Vector artwork (logo, icons, ground-floor plan, master plan) is in `src/svg` and `public/svg`. The clay backgrounds are a flat colour with a CSS grain overlay (`.grain` in `src/styles.css`), not photos.
 
+## Brochure (PDF)
+
+`public/ilika-the-earth-brochure.pdf` is a 31-page A4 landscape brochure in the same design as the site, live at `/ilika-the-earth-brochure.pdf`. Its pages are in `brochure/brochure.html` + `brochure/brochure.css` and use the same photos from `/images`, so after replacing photos regenerate it with:
+
+```bash
+npm run brochure   # needs Playwright's Chromium: npx playwright install chromium
+```
+
 ## Editing content
 
 All copy is in [`index.html`](index.html). Shorthand used there:
