@@ -4,6 +4,7 @@
    ========================================================================== */
 
 :root {
+  --chrome: #8a4a32; /* colour under the header — set by JS, mirrored to the browser bars */
   --sand: #e9e3d6;
   --linen: #f2eee4;
   --clay: #8a4a32;
@@ -387,18 +388,14 @@ em {
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: rgb(233 227 214 / 0.78);
-  backdrop-filter: blur(14px) saturate(1.1);
-  -webkit-backdrop-filter: blur(14px) saturate(1.1);
-  border-bottom: 1px solid var(--line);
-  transition: opacity 0.4s;
+  /* solid and identical to theme-color, so the browser bar and header read as one surface */
+  background: var(--chrome);
+  transition:
+    opacity 0.4s,
+    background-color 0.5s;
 }
 .header.is-dark {
   color: var(--cream);
-}
-.header.is-dark::before {
-  background: rgb(70 34 21 / 0.66);
-  border-bottom-color: var(--line-light);
 }
 .header.is-top::before {
   opacity: 0;
@@ -610,6 +607,58 @@ em {
 }
 .menu-open .menu__foot {
   opacity: 1;
+}
+
+/* ==========================================================================
+   Portrait-only on phones
+   ========================================================================== */
+.rotate {
+  display: none;
+}
+@media (orientation: landscape) and (max-height: 540px) and (hover: none) and (pointer: coarse) {
+  html,
+  body {
+    overflow: hidden;
+  }
+  .rotate {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: grid;
+    place-items: center;
+    color: var(--cream);
+  }
+  .rotate__inner {
+    display: grid;
+    justify-items: center;
+    gap: 14px;
+    text-align: center;
+  }
+  .rotate__icon {
+    width: 46px;
+    height: 46px;
+    opacity: 0.85;
+    animation: rotate-hint 2.8s var(--ease-in-out) infinite;
+  }
+  .rotate__brand {
+    margin-top: 6px;
+    font-family: var(--f-display);
+    font-size: 30px;
+    line-height: 1;
+  }
+  .rotate .label {
+    opacity: 0.8;
+  }
+}
+@keyframes rotate-hint {
+  0%,
+  20% {
+    transform: rotate(90deg);
+  }
+  55%,
+  100% {
+    transform: rotate(0deg);
+  }
 }
 
 /* ==========================================================================

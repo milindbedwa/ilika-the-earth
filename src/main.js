@@ -42,6 +42,7 @@ function setMenu(open) {
   menu.setAttribute('aria-hidden', String(!open));
   menu.inert = !open;
   if (lenis) open ? lenis.stop() : lenis.start();
+  queueChrome();
 }
 menu.inert = true;
 menuToggle.addEventListener('click', () => setMenu(!body.classList.contains('menu-open')));
@@ -85,6 +86,60 @@ function updateHeader() {
 }
 lenis ? lenis.on('scroll', updateHeader) : addEventListener('scroll', updateHeader, { passive: true });
 updateHeader();
+
+/* ---------- browser bars take the colour of the section under the header ---------- */
+const themeMeta = $('meta[name="theme-color"]');
+let chrome = '';
+function sectionColour() {
+  const rotate = $('.rotate');
+  if (getComputedStyle(rotate).display !== 'none') return getComputedStyle(rotate).backgroundColor;
+  if (body.classList.contains('menu-open')) return getComputedStyle($('[data-menu]')).backgroundColor;
+  // sample just below the header, i.e. the content the bar sits against
+  const y = header.classList.contains('is-hidden') ? 1 : header.getBoundingClientRect().bottom + 2;
+  const stack = document.elementsFromPoint(innerWidth / 2, y);
+  for (const top of stack) {
+    if (top.closest('.header, .cursor, .rotate')) continue;
+    // nearest ancestor with a solid background, skipping photo frames
+    for (let el = top; el && el !== document.documentElement; el = el.parentElement) {
+      if (el.matches('.media, figure, img')) continue;
+      const bg = getComputedStyle(el).backgroundColor;
+      const a = bg
+        .match(/rgba?\(([^)]+)\)/)?.[1]
+        .split(',')
+        .map(Number);
+      if (a && (a[3] ?? 1) === 1) return bg;
+    }
+  }
+  return getComputedStyle(body).backgroundColor;
+}
+const toHex = (rgb) =>
+  '#' +
+  rgb
+    .match(/\d+/g)
+    .slice(0, 3)
+    .map((n) => (+n).toString(16).padStart(2, '0'))
+    .join('');
+function updateChrome() {
+  const c = toHex(sectionColour());
+  if (c === chrome) return;
+  chrome = c;
+  themeMeta.content = c;
+  root.style.setProperty('--chrome', c);
+  root.style.backgroundColor = c; // overscroll / rubber-band area
+}
+let chromeQueued = false;
+const queueChrome = () => {
+  if (chromeQueued) return;
+  chromeQueued = true;
+  requestAnimationFrame(() => {
+    chromeQueued = false;
+    updateChrome();
+  });
+};
+lenis ? lenis.on('scroll', queueChrome) : addEventListener('scroll', queueChrome, { passive: true });
+addEventListener('resize', queueChrome);
+header.addEventListener('transitionend', (e) => e.propertyName === 'transform' && queueChrome());
+updateChrome();
 
 // active nav link
 $$('.header__nav a').forEach((a) => {
