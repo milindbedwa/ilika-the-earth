@@ -26,6 +26,9 @@
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 
   --sec: clamp(96px, 16vw, 200px); /* vertical section rhythm */
+
+  /* fine film grain laid over flat clay */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 @media (min-width: 900px) {
@@ -141,6 +144,24 @@ em {
 }
 .skip:focus {
   transform: none;
+}
+
+/* ---------- grain surface ---------- */
+.grain {
+  position: relative;
+  isolation: isolate;
+  background-color: var(--clay);
+}
+.grain::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: var(--grain);
+  background-size: 220px;
+  opacity: 0.4;
+  mix-blend-mode: overlay;
 }
 
 /* ---------- layout ---------- */
@@ -508,15 +529,6 @@ em {
   visibility: visible;
   transition: clip-path 0.9s var(--ease-in-out);
 }
-.menu__bg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: -1;
-  opacity: 0.9;
-}
 .menu__nav {
   display: grid;
   gap: 2px;
@@ -665,24 +677,6 @@ em {
   position: absolute;
   inset: 0;
 }
-.hero__bg img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.hero__bg-land {
-  display: none;
-}
-@media (min-aspect-ratio: 1/1) {
-  .hero__bg-land {
-    display: block;
-  }
-  .hero__bg-port {
-    display: none;
-  }
-}
 .hero__center {
   position: relative;
   display: grid;
@@ -703,7 +697,7 @@ em {
   right: var(--gutter);
   bottom: calc(22px + env(safe-area-inset-bottom));
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: flex-end;
   opacity: 0.85;
 }
@@ -839,8 +833,24 @@ em {
   overflow: hidden;
   background: var(--espresso);
 }
-.cover--short {
-  min-height: 75svh;
+.cover--square,
+.cover--land {
+  min-height: 0;
+}
+.cover--square {
+  aspect-ratio: 1;
+}
+.cover--land {
+  aspect-ratio: 3 / 2;
+}
+@media (min-width: 900px) {
+  .cover--square {
+    aspect-ratio: auto;
+    min-height: 100svh;
+  }
+  .cover--land {
+    aspect-ratio: 2 / 1;
+  }
 }
 .cover__media {
   position: absolute;
@@ -876,7 +886,7 @@ em {
 }
 
 /* ==========================================================================
-   Philosophy + marquee + chapters
+   Philosophy + marquee
    ========================================================================== */
 .philosophy {
   padding-block: var(--sec) 80px;
@@ -952,94 +962,6 @@ em {
 @keyframes marquee {
   to {
     transform: translateX(-50%);
-  }
-}
-
-.chapters {
-  padding-block: var(--sec);
-  position: relative;
-}
-.chapters__list {
-  margin-top: 28px;
-  border-top: 1px solid var(--line);
-  counter-reset: ch;
-}
-.chapters__list a {
-  display: grid;
-  grid-template-columns: 44px 1fr 64px;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--line);
-  transition:
-    color 0.4s,
-    padding 0.6s var(--ease);
-}
-.chapters__no {
-  font-family: var(--f-display);
-  font-size: 14px;
-  color: var(--clay);
-}
-.chapters__name {
-  font-family: var(--f-display);
-  font-size: clamp(1.6rem, 6vw, 4.2rem);
-  line-height: 1.1;
-  letter-spacing: -0.015em;
-}
-.chapters__list img {
-  width: 64px;
-  height: 64px;
-  object-fit: cover;
-}
-.chapters__float {
-  display: none;
-}
-@media (hover: hover) and (pointer: fine) and (min-width: 900px) {
-  .chapters__list a {
-    grid-template-columns: 80px 1fr;
-    padding: 18px 0;
-  }
-  .chapters__list img {
-    display: none;
-  }
-  .chapters__list:hover a {
-    color: rgb(85 52 37 / 0.35);
-  }
-  .chapters__list a:hover {
-    color: var(--clay);
-    padding-left: 18px;
-  }
-  .chapters__float {
-    display: block;
-    position: fixed;
-    left: 0;
-    top: 0;
-    z-index: 5;
-    width: 300px;
-    aspect-ratio: 4 / 5;
-    pointer-events: none;
-    overflow: hidden;
-    opacity: 0;
-    transform: scale(0.85);
-    transition:
-      opacity 0.4s,
-      transform 0.6s var(--ease);
-  }
-  .chapters__float.is-on {
-    opacity: 1;
-    transform: scale(1);
-  }
-  .chapters__float img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: 0;
-    transition: opacity 0.35s;
-  }
-  .chapters__float img.is-on {
-    opacity: 1;
   }
 }
 
@@ -1465,19 +1387,7 @@ em {
    Earth (terracotta) — plan, master plan, location
    ========================================================================== */
 .earth {
-  position: relative;
   color: var(--cream);
-  background: var(--clay);
-  isolation: isolate;
-}
-.earth__bg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: -1;
-  background: none;
 }
 .earth .body-lg,
 .earth .prose,
@@ -1857,86 +1767,13 @@ em {
 }
 
 /* ==========================================================================
-   Team
-   ========================================================================== */
-.team {
-  padding-block: var(--sec);
-}
-.team__head {
-  display: grid;
-  gap: 22px;
-  margin-bottom: 56px;
-}
-.team__head .h-1 {
-  color: var(--clay);
-}
-.team__grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 32px 14px;
-}
-.team__grid .media {
-  margin-bottom: 14px;
-}
-.team__grid img {
-  filter: grayscale(1) contrast(1.02);
-  transition:
-    transform 1.2s var(--ease),
-    filter 0.8s;
-}
-.team__grid li:hover img {
-  transform: scale(1.05);
-  filter: grayscale(0.2) sepia(0.25);
-}
-.team__grid h3 {
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-.team__grid p {
-  color: var(--muted);
-  font-size: 15px;
-}
-@media (min-width: 900px) {
-  .team {
-    display: grid;
-    grid-template-columns: 1fr 1.6fr;
-    gap: 6vw;
-    align-items: start;
-  }
-  .team__head {
-    position: sticky;
-    top: 120px;
-  }
-  .team__grid {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 18px;
-  }
-  .team__grid li:nth-child(even) {
-    margin-top: 60px;
-  }
-}
-
-/* ==========================================================================
    Footer + enquiry
    ========================================================================== */
 .footer {
-  position: relative;
-  isolation: isolate;
   color: var(--cream);
-  background: var(--clay-deep);
+  background-color: var(--clay-deep);
   padding: var(--sec) 0 calc(24px + env(safe-area-inset-bottom));
   overflow: hidden;
-}
-.footer__bg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: -1;
-  filter: brightness(0.9);
 }
 .footer__inner {
   display: grid;

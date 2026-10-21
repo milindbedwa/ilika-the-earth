@@ -109,13 +109,11 @@ function intro() {
     body.classList.add('is-ready');
     return;
   }
-  tl.fromTo('[data-hero-bg] img', { scale: 1.12 }, { scale: 1, duration: 2.6, ease: 'power3.out' }, 0)
-    .to(logo, { maskPosition: '0% 0', webkitMaskPosition: '0% 0', duration: 2.1, ease: 'power2.inOut' }, 0.25)
+  tl.to(logo, { maskPosition: '0% 0', webkitMaskPosition: '0% 0', duration: 2.1, ease: 'power2.inOut' }, 0.25)
     .fromTo(logo, { y: 18 }, { y: 0, duration: 2.2 }, 0.25)
     .to('[data-hero-line]', { opacity: 1, y: 0, duration: 1.2, stagger: 0.12 }, 1.6)
     .add(() => body.classList.add('is-ready'), 1.5);
 }
-const heroImg = $$('[data-hero-bg] img').find((img) => img.offsetParent !== null);
 let started = false;
 const go = () => {
   if (started) return;
@@ -123,18 +121,13 @@ const go = () => {
   body.classList.remove('is-loading');
   intro();
 };
-Promise.race([Promise.all([document.fonts?.ready, heroImg?.decode?.().catch(() => {})]), new Promise((r) => setTimeout(r, 2200))]).then(go);
+Promise.race([document.fonts?.ready ?? Promise.resolve(), new Promise((r) => setTimeout(r, 2200))]).then(go);
 
 // hero drifts away as you scroll
 if (motion) {
   gsap.to('.hero__center', {
     yPercent: 35,
     opacity: 0,
-    ease: 'none',
-    scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true },
-  });
-  gsap.to('[data-hero-bg]', {
-    yPercent: 18,
     ease: 'none',
     scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true },
   });
@@ -222,34 +215,6 @@ if (motion) {
   });
 } else {
   $$('[data-split]').forEach((el) => (el.style.visibility = 'visible'));
-}
-
-/* ---------- chapters: floating preview follows the cursor ---------- */
-const float = $('[data-chapter-float]');
-if (float && finePointer) {
-  const links = $$('.chapters__list a');
-  links.forEach((a) => {
-    const img = $('img', a).cloneNode();
-    img.removeAttribute('sizes');
-    img.sizes = '300px';
-    img.loading = 'lazy';
-    float.append(img);
-  });
-  const imgs = $$('img', float);
-  const xTo = gsap.quickTo(float, 'x', { duration: 0.8, ease: 'power3' });
-  const yTo = gsap.quickTo(float, 'y', { duration: 0.8, ease: 'power3' });
-  const list = $('.chapters__list');
-  list.addEventListener('mousemove', (e) => {
-    xTo(e.clientX + 30);
-    yTo(e.clientY - 180);
-  });
-  links.forEach((a, i) =>
-    a.addEventListener('mouseenter', () => {
-      float.classList.add('is-on');
-      imgs.forEach((im, j) => im.classList.toggle('is-on', i === j));
-    }),
-  );
-  list.addEventListener('mouseleave', () => float.classList.remove('is-on'));
 }
 
 /* ---------- gallery ---------- */

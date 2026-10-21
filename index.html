@@ -50,8 +50,7 @@
     </header>
 
     <!-- Fullscreen menu -->
-    <div class="menu" id="menu" aria-hidden="true" data-menu>
-      <img class="menu__bg" data-pic="texture-clay" alt="" sizes="100vw" />
+    <div class="menu grain" id="menu" aria-hidden="true" data-menu>
       <nav class="menu__nav" aria-label="Menu">
         <a href="#living"><span>01</span>Living</a>
         <a href="#materials"><span>02</span>Lime plaster</a>
@@ -61,7 +60,6 @@
         <a href="#plan"><span>06</span>Unit plan</a>
         <a href="#masterplan"><span>07</span>Master plan</a>
         <a href="#location"><span>08</span>Location</a>
-        <a href="#team"><span>09</span>Team</a>
       </nav>
       <div class="menu__foot">
         <a class="btn btn--light" href="#enquire">Book a private viewing</a>
@@ -72,16 +70,12 @@
     <main id="main">
       <!-- ============ HERO ============ -->
       <section class="hero" id="top" data-theme="dark">
-        <div class="hero__bg" data-hero-bg>
-          <img data-pic="hero-clay" alt="" sizes="100vw" data-eager class="hero__bg-land" />
-          <img data-pic="hero-clay-portrait" alt="" sizes="100vw" data-eager class="hero__bg-port" />
-        </div>
+        <div class="hero__bg grain" data-hero-bg></div>
         <div class="hero__center">
           <h1 class="hero__logo"><i data-svg="logo" aria-label="ilika — The Earth"></i></h1>
           <p class="hero__kicker label" data-hero-line>A premium farmhouse project</p>
         </div>
         <div class="hero__foot" data-hero-line>
-          <span class="label">Navakhal · Vadodara</span>
           <a class="hero__scroll label" href="#living">Scroll to explore<span class="hero__scroll-line" aria-hidden="true"></span></a>
         </div>
       </section>
@@ -133,7 +127,7 @@
         </div>
       </section>
 
-      <section class="cover cover--retreat" data-theme="dark">
+      <section class="cover cover--square" data-theme="dark">
         <figure class="cover__media">
           <img
             data-pic="retreat-evening"
@@ -189,62 +183,6 @@
           ><span>Wellness</span><i data-svg="icons/wave"></i><span>Responsible living</span><i data-svg="icons/wave"></i>
         </div>
       </div>
-
-      <!-- Chapters -->
-      <section class="chapters wrap-x" aria-labelledby="chapters-title">
-        <p class="label" id="chapters-title">Contents</p>
-        <ol class="chapters__list" data-stagger>
-          <li>
-            <a href="#living" data-preview="0"
-              ><span class="chapters__no">01</span><span class="chapters__name">ilika</span
-              ><img data-pic="courtyard-entrance" alt="" sizes="96px"
-            /></a>
-          </li>
-          <li>
-            <a href="#materials" data-preview="1"
-              ><span class="chapters__no">02</span><span class="chapters__name">Lime plaster</span
-              ><img data-pic="lime-plaster" alt="" sizes="96px"
-            /></a>
-          </li>
-          <li>
-            <a href="#spaces" data-preview="2"
-              ><span class="chapters__no">03</span><span class="chapters__name">Curated spaces</span
-              ><img data-pic="tree-pavilion" alt="" sizes="96px"
-            /></a>
-          </li>
-          <li>
-            <a href="#wellness" data-preview="3"
-              ><span class="chapters__no">04</span><span class="chapters__name">Wellness</span
-              ><img data-pic="wellness-yoga-deck" alt="" sizes="96px"
-            /></a>
-          </li>
-          <li>
-            <a href="#sustainable" data-preview="4"
-              ><span class="chapters__no">05</span><span class="chapters__name">Sustainable design</span
-              ><img data-pic="clay-curves" alt="" sizes="96px"
-            /></a>
-          </li>
-          <li>
-            <a href="#plan" data-preview="5"
-              ><span class="chapters__no">06</span><span class="chapters__name">Unit plan</span
-              ><img data-pic="farmhouse-pool" alt="" sizes="96px"
-            /></a>
-          </li>
-          <li>
-            <a href="#masterplan" data-preview="6"
-              ><span class="chapters__no">07</span><span class="chapters__name">Master plan</span
-              ><img data-pic="gazebo" alt="" sizes="96px"
-            /></a>
-          </li>
-          <li>
-            <a href="#location" data-preview="7"
-              ><span class="chapters__no">08</span><span class="chapters__name">Location</span
-              ><img data-pic="location-map" alt="" sizes="96px"
-            /></a>
-          </li>
-        </ol>
-        <div class="chapters__float" aria-hidden="true" data-chapter-float></div>
-      </section>
 
       <!-- ============ 02 · LIME PLASTER ============ -->
       <section class="cover" id="materials" data-theme="dark">
@@ -429,16 +367,6 @@
               </figure>
               <span class="label">Threshold</span>
             </li>
-            <li class="gallery__item gallery__item--wide">
-              <figure class="media">
-                <img
-                  data-pic="tree-pavilion"
-                  alt="A sculpted lime-plaster pavilion with a circular opening around a living tree"
-                  sizes="(min-width: 900px) 52vw, 88vw"
-                />
-              </figure>
-              <span class="label">The tree court</span>
-            </li>
             <li class="gallery__item gallery__item--tall">
               <figure class="media">
                 <img
@@ -569,7 +497,7 @@
         </div>
       </section>
 
-      <section class="cover cover--short" data-theme="dark">
+      <section class="cover cover--land" data-theme="dark">
         <figure class="cover__media">
           <img
             data-pic="pool-sunset"
@@ -905,9 +833,7 @@
       </section>
 
       <!-- ============ 06 · UNIT PLAN ============ -->
-      <div class="earth" data-theme="dark">
-        <img class="earth__bg" data-pic="texture-clay" alt="" sizes="100vw" />
-
+      <div class="earth grain" data-theme="dark">
         <section class="plan wrap-x" id="plan">
           <div class="plan__intro">
             <p class="label chapter"><span>06</span> Unit plan</p>
@@ -1224,53 +1150,10 @@
           </ul>
         </section>
       </div>
-
-      <!-- ============ TEAM ============ -->
-      <section class="team wrap-x" id="team">
-        <div class="team__head">
-          <h2 class="h-1" data-split>Meet the team</h2>
-          <p class="body-lg" data-fade>
-            Behind ILIKA is a multidisciplinary team brought together by a shared belief: better spaces can lead to better ways of living.
-            From architecture and landscape to design and development, each of us brings a different perspective to creating environments
-            that feel natural, considered, and deeply human.
-          </p>
-        </div>
-        <ul class="team__grid" data-stagger>
-          <li>
-            <figure class="media media--3x4">
-              <img data-pic="team-amit" alt="Portrait of Amit Meena" sizes="(min-width: 900px) 20vw, 45vw" />
-            </figure>
-            <h3>Amit Meena</h3>
-            <p>Visionary</p>
-          </li>
-          <li>
-            <figure class="media media--3x4">
-              <img data-pic="team-milind" alt="Portrait of Milind Bedwa" sizes="(min-width: 900px) 20vw, 45vw" />
-            </figure>
-            <h3>Milind Bedwa</h3>
-            <p>Creative director</p>
-          </li>
-          <li>
-            <figure class="media media--3x4">
-              <img data-pic="team-ganpat" alt="Portrait of Ganpat" sizes="(min-width: 900px) 20vw, 45vw" />
-            </figure>
-            <h3>Ganpat</h3>
-            <p>Technical design director</p>
-          </li>
-          <li>
-            <figure class="media media--3x4">
-              <img data-pic="team-jigar" alt="Portrait of Jigar Parmar" sizes="(min-width: 900px) 20vw, 45vw" />
-            </figure>
-            <h3>Jigar Parmar</h3>
-            <p>Execution director</p>
-          </li>
-        </ul>
-      </section>
     </main>
 
     <!-- ============ ENQUIRE + FOOTER ============ -->
-    <footer class="footer" id="enquire" data-theme="dark">
-      <img class="footer__bg" data-pic="texture-clay" alt="" sizes="100vw" />
+    <footer class="footer grain" id="enquire" data-theme="dark">
       <div class="footer__inner wrap-x">
         <div class="footer__logo" data-footer-logo><i data-svg="logo" aria-label="ilika — The Earth"></i></div>
         <p class="footer__line">
@@ -1294,7 +1177,7 @@
         <div class="footer__cols">
           <nav class="footer__nav" aria-label="Footer">
             <a href="#living">Living</a><a href="#materials">Lime plaster</a><a href="#spaces">Spaces</a><a href="#wellness">Wellness</a
-            ><a href="#plan">Plan</a><a href="#location">Location</a><a href="#team">Team</a>
+            ><a href="#plan">Plan</a><a href="#location">Location</a>
           </nav>
           <div class="footer__contact">
             <p class="label">Enquiries</p>
