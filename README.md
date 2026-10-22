@@ -35,8 +35,9 @@ All photos live in [`/images`](images). On every build, `scripts/build-images.mj
 | `farmhouse-evening`, `vase-shadow-wall`                                                                    | Climate responsive design                                                                                          |
 | `plan-first`                                                                                               | First-floor plan (cream lines on transparent PNG)                                                                  |
 | `location-map`                                                                                             | Location map art (transparent PNG, no text — place labels and logo are live text in `src/svg/location-labels.svg`) |
+| `masterplan`                                                                                               | Master plan illustration (transparent PNG); the 01–04 plot markers on top are positioned in `index.html`           |
 
-Vector artwork (logo, icons, ground-floor plan, master plan) is in `src/svg` and `public/svg`. The clay backgrounds are a flat colour with a CSS grain overlay (`.grain` in `src/styles.css`), not photos.
+Vector artwork (logo, icons, ground-floor plan) is in `src/svg` and `public/svg`. The clay backgrounds are a flat colour with a CSS grain overlay (`.grain` in `src/styles.css`), not photos.
 
 ## Brochure (PDF)
 

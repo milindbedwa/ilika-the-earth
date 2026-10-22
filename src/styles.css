@@ -1636,6 +1636,9 @@ em {
 }
 .mp__canvas {
   position: relative;
+  width: 100%;
+  max-width: 720px;
+  justify-self: center;
 }
 .mp__canvas img {
   width: 100%;
