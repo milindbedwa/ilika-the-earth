@@ -491,6 +491,7 @@ const map = $('[data-map]');
 if (map) {
   const screen = $('.map__screen', map);
   const route = $('[data-map-route]', map);
+  const glow = $('[data-map-route-glow]', map);
   const car = $('[data-map-car]', map);
   const cam = $('[data-map-cam]', map);
   const now = $('[data-map-now]', map);
@@ -516,9 +517,9 @@ if (map) {
     s.at = s.dataset.at ? +s.dataset.at : nearestAt(+cs.getPropertyValue('--x'), +cs.getPropertyValue('--y'));
   });
 
-  route.style.strokeDasharray = `${total} ${total}`;
+  route.style.strokeDasharray = glow.style.strokeDasharray = `${total} ${total}`;
   const render = (t) => {
-    route.style.strokeDashoffset = total * (1 - t);
+    route.style.strokeDashoffset = glow.style.strokeDashoffset = total * (1 - t);
     // place the car on the route and turn it to face the road a little way ahead
     const l = total * t;
     const p = route.getPointAtLength(l);
@@ -570,7 +571,6 @@ if (map) {
       lenis ? lenis.scrollTo(y, { duration: 1.4 }) : scrollTo({ top: y, behavior: 'smooth' });
     }),
   );
-  stops.forEach((s) => (s.dataset.cursor = s.dataset.name));
 }
 
 /* ---------- footer logo is written in when it scrolls into view ---------- */
@@ -615,7 +615,7 @@ if (finePointer && motion) {
   const xTo = gsap.quickTo(cursor, 'x', { duration: 0.45, ease: 'power3' });
   const yTo = gsap.quickTo(cursor, 'y', { duration: 0.45, ease: 'power3' });
   addEventListener('mousemove', (e) => {
-    if (!e.target.closest?.('input, textarea')) cursor.classList.remove('is-hidden');
+    if (!e.target.closest?.('input, textarea, .map__screen')) cursor.classList.remove('is-hidden');
     xTo(e.clientX);
     yTo(e.clientY);
   });
@@ -628,7 +628,7 @@ if (finePointer && motion) {
     }
     cursor.classList.toggle('is-label', !!labelled && !link?.matches('.mp__spot, .btn'));
     cursor.classList.toggle('is-link', !!link && !labelled);
-    cursor.classList.toggle('is-hidden', !!e.target.closest('input, textarea'));
+    cursor.classList.toggle('is-hidden', !!e.target.closest('input, textarea, .map__screen'));
   });
   document.addEventListener('mouseleave', () => cursor.classList.add('is-hidden'));
   document.addEventListener('mouseenter', () => cursor.classList.remove('is-hidden'));

@@ -1125,6 +1125,11 @@
                       d="M1866 345 L1866 366 L1794 545 L1777 673 L1752 803 L1747 841 L1748 882 L1742 904 L1695 999 L1685 1014 L1667 1029 L1665 1038 L1656 1038 L1650 1047 L1639 1049 L1623 1066 L1591 1081 L1501 1098 L1493 1111 L1493 1125 L1562 1296 L1578 1477 L1583 1594 L1580 1644 L1581 1654 L1593 1658 L1590 1666 L1773 1538 L1925 1599"
                     />
                     <path
+                      class="map__route-glow"
+                      d="M1866 345 L1866 366 L1794 545 L1777 673 L1752 803 L1747 841 L1748 882 L1742 904 L1695 999 L1685 1014 L1667 1029 L1665 1038 L1656 1038 L1650 1047 L1639 1049 L1623 1066 L1591 1081 L1501 1098 L1493 1111 L1493 1125 L1562 1296 L1578 1477 L1583 1594 L1580 1644 L1581 1654 L1593 1658 L1590 1666 L1773 1538 L1925 1599"
+                      data-map-route-glow
+                    />
+                    <path
                       class="map__route-line"
                       d="M1866 345 L1866 366 L1794 545 L1777 673 L1752 803 L1747 841 L1748 882 L1742 904 L1695 999 L1685 1014 L1667 1029 L1665 1038 L1656 1038 L1650 1047 L1639 1049 L1623 1066 L1591 1081 L1501 1098 L1493 1111 L1493 1125 L1562 1296 L1578 1477 L1583 1594 L1580 1644 L1581 1654 L1593 1658 L1590 1666 L1773 1538 L1925 1599"
                       data-map-route
@@ -1188,14 +1193,15 @@
                         <stop offset="0" stop-color="#ffe7b0" stop-opacity="0.55" />
                         <stop offset="1" stop-color="#ffe7b0" stop-opacity="0" />
                       </radialGradient>
-                      <filter id="car-shadow" x="-50%" y="-50%" width="200%" height="200%">
-                        <feGaussianBlur stdDeviation="5" />
-                      </filter>
+                      <radialGradient id="car-shadow">
+                        <stop offset="0.55" stop-color="#1e0f08" stop-opacity="0.45" />
+                        <stop offset="1" stop-color="#1e0f08" stop-opacity="0" />
+                      </radialGradient>
                     </defs>
                     <!-- small top-down car, drawn facing +x; JS moves and turns it along the route -->
                     <g class="map__car" data-map-car transform="translate(1866 345)">
                       <path d="M30 -10 L120 -46 L120 46 L30 10 Z" fill="url(#car-beam)" />
-                      <rect x="-30" y="-14" width="64" height="32" rx="12" fill="#1e0f08" opacity="0.5" filter="url(#car-shadow)" />
+                      <ellipse cx="3" cy="5" rx="42" ry="24" fill="url(#car-shadow)" />
                       <rect x="-22" y="-19" width="10" height="5" rx="2" fill="#2a1a12" />
                       <rect x="-22" y="14" width="10" height="5" rx="2" fill="#2a1a12" />
                       <rect x="14" y="-19" width="10" height="5" rx="2" fill="#2a1a12" />

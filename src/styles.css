@@ -1761,6 +1761,13 @@ em {
   overflow: hidden;
   background: var(--map-bg);
 }
+/* the custom cursor steps aside over the map: stops slide under a still mouse while
+   scrolling, which would make its hover state flick on and off */
+@media (hover: hover) and (pointer: fine) {
+  .map__screen {
+    cursor: default;
+  }
+}
 /* soft hand-off from the section's clay into the darker map field, top and bottom */
 .map__screen::before {
   content: '';
@@ -1780,8 +1787,7 @@ em {
   pointer-events: none;
   background-image: var(--grain);
   background-size: 220px;
-  mix-blend-mode: overlay;
-  opacity: 0.4;
+  opacity: 0.09;
 }
 /* The artwork (3466×1858) is one screen tall; its focus point — the middle of the
    route Gotri → ILIKA — sits at the centre of the screen. */
@@ -1865,16 +1871,19 @@ em {
   stroke: rgb(255 248 236 / 0.18);
   stroke-width: 10px;
 }
+/* glow is a wide soft stroke under the line, not a CSS/SVG filter: filters on an
+   animating path repaint as a box (and flicker) in Safari */
+.map__route-glow {
+  stroke: rgb(255 240 210 / 0.22);
+  stroke-width: 16px;
+}
 .map__route-line {
   stroke: #fff6e6;
   stroke-width: 5px;
-  filter: drop-shadow(0 0 6px rgb(255 240 210 / 0.9));
-}
-.map__car {
-  filter: drop-shadow(0 0 10px rgb(255 236 200 / 0.35));
 }
 .map__stop {
   position: absolute;
+  cursor: pointer;
   left: calc(var(--x) / 3466 * 100%);
   top: calc(var(--y) / 1858 * 100%);
   width: 40px;
