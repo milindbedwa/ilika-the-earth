@@ -747,11 +747,18 @@ em {
   place-items: center;
   overflow: hidden;
   color: var(--cream);
-  background: var(--clay);
+  /* = the plaster photo's top edge, so the header and browser bars blend into it */
+  background: #7e2d16;
 }
 .hero__bg {
   position: absolute;
   inset: 0;
+}
+.hero__bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: none;
 }
 .hero__center {
   position: relative;

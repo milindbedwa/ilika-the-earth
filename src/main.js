@@ -248,7 +248,8 @@ function intro() {
     return;
   }
   const tl = gsap.timeline({ defaults: { ease: EASE } });
-  tl.add(writeInk(logo, prepareInk(logo)), 0.35)
+  tl.fromTo('[data-hero-bg] img', { scale: 1.08 }, { scale: 1, duration: 3.2, ease: 'power2.out' }, 0)
+    .add(writeInk(logo, prepareInk(logo)), 0.35)
     .to('[data-hero-line]', { opacity: 1, y: 0, duration: 1.2 }, '>-0.6')
     .add(() => {
       body.classList.add('is-ready');
