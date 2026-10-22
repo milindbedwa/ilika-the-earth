@@ -486,10 +486,86 @@ if (mp) {
   if (finePointer) mp.addEventListener('mouseleave', () => setPlot(null));
 }
 
-/* ---------- map: turns slowly, paused while off screen ---------- */
+/* ---------- map: the drive from Gotri to ILIKA draws itself as you scroll ---------- */
 const map = $('[data-map]');
-if (map && 'IntersectionObserver' in window)
-  new IntersectionObserver(([e]) => map.classList.toggle('is-paused', !e.isIntersecting)).observe(map);
+if (map) {
+  const screen = $('.map__screen', map);
+  const route = $('[data-map-route]', map);
+  const car = $('[data-map-car]', map);
+  const cam = $('[data-map-cam]', map);
+  const now = $('[data-map-now]', map);
+  const label = $('[data-map-label]', map);
+  const bar = $('[data-map-bar]', map);
+  const stops = $$('.map__stop', map);
+  const total = route.getTotalLength();
+
+  // where along the route each stop sits (0–1)
+  const nearestAt = (x, y) => {
+    let best = 0;
+    let bestD = Infinity;
+    for (let l = 0; l <= total; l += 4) {
+      const p = route.getPointAtLength(l);
+      const d = (p.x - x) ** 2 + (p.y - y) ** 2;
+      if (d < bestD) [bestD, best] = [d, l];
+    }
+    return best / total;
+  };
+  stops.forEach((s) => {
+    const cs = getComputedStyle(s);
+    s.at = s.dataset.at ? +s.dataset.at : nearestAt(+cs.getPropertyValue('--x'), +cs.getPropertyValue('--y'));
+  });
+
+  route.style.strokeDasharray = `${total} ${total}`;
+  const render = (t) => {
+    route.style.strokeDashoffset = total * (1 - t);
+    const p = route.getPointAtLength(total * t);
+    car.setAttribute('cx', p.x);
+    car.setAttribute('cy', p.y);
+    bar.style.transform = `scaleX(${t})`;
+    let current = stops[0];
+    stops.forEach((s) => {
+      const reached = t >= s.at - 0.002;
+      s.classList.toggle('is-reached', reached);
+      if (reached) current = s;
+    });
+    if (now.textContent !== current.dataset.name) now.textContent = current.dataset.name;
+    label.textContent = t > 0.995 ? 'You have arrived' : 'The drive';
+  };
+
+  let st = null;
+  if (motion) {
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: screen,
+        start: 'top top',
+        end: () => `+=${innerHeight * 1.6}`,
+        pin: true,
+        scrub: 0.8,
+        invalidateOnRefresh: true,
+      },
+    });
+    const state = { t: 0 };
+    tl.to(state, { t: 1, ease: 'none', duration: 1, onUpdate: () => render(state.t) }, 0).fromTo(
+      cam,
+      { scale: 1 },
+      { scale: () => (innerWidth < 900 ? 1.14 : 1.28), ease: 'power2.inOut', duration: 0.45 },
+      0.6,
+    );
+    st = tl.scrollTrigger;
+  } else {
+    render(1);
+  }
+
+  // tap / click a stop to drive there
+  stops.forEach((s) =>
+    s.addEventListener('click', () => {
+      if (!st) return;
+      const y = st.start + (st.end - st.start) * Math.min(s.at, 1);
+      lenis ? lenis.scrollTo(y, { duration: 1.4 }) : scrollTo({ top: y, behavior: 'smooth' });
+    }),
+  );
+  stops.forEach((s) => (s.dataset.cursor = s.dataset.name));
+}
 
 /* ---------- footer logo is written in when it scrolls into view ---------- */
 const footLogo = $('[data-footer-logo] svg');

@@ -844,17 +844,39 @@ figure img {
 .location-map {
   background: var(--clay);
 }
-/* map sits beside the panel, framed on the whole route: Gotri down to ILIKA */
-.location-map > img {
+/* map artwork (2000×987) fills the right side, centred on the route Gotri → ILIKA */
+.location-map__art {
   position: absolute;
   top: 0;
-  bottom: 0;
-  right: 0;
-  left: 104mm;
-  width: calc(100% - 104mm);
   height: 100%;
-  object-fit: cover;
-  object-position: 34% 100%;
+  aspect-ratio: 2000 / 987;
+  left: calc(104mm + (297mm - 104mm) / 2);
+  transform: translateX(-52%);
+  z-index: -2;
+}
+.location-map__art img {
+  width: 100%;
+  height: 100%;
+}
+.location-map__pin {
+  position: absolute;
+  left: 57.9%;
+  top: 89.3%;
+  width: 3.4mm;
+  height: 3.4mm;
+  margin: -1.7mm 0 0 -1.7mm;
+  border-radius: 50%;
+  background: var(--cream);
+  box-shadow: 0 0 0 1.6mm rgb(241 231 214 / 0.3);
+}
+.location-map__pin svg {
+  position: absolute;
+  left: 50%;
+  bottom: 4mm;
+  width: 15mm;
+  height: auto;
+  color: var(--cream);
+  transform: translateX(-12%);
 }
 .location-map__panel {
   position: absolute;
@@ -867,6 +889,8 @@ figure img {
   align-content: start;
   gap: 5mm;
   color: var(--cream);
+  background-color: var(--clay);
+  z-index: 1;
 }
 .location-map__panel .prose {
   color: rgb(241 231 214 / 0.84);
