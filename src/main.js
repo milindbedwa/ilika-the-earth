@@ -376,6 +376,7 @@ if (gallery) {
   // desktop: pin and translate the track with vertical scroll
   mm.add('(min-width: 900px) and (prefers-reduced-motion: no-preference)', () => {
     gallery.classList.add('is-pinned');
+    const GALLERY_SLOWNESS = 10; // higher = slower
     const distance = () => track.scrollWidth - innerWidth;
     const tween = gsap.to(track, {
       x: () => -distance(),
@@ -383,8 +384,8 @@ if (gallery) {
       scrollTrigger: {
         trigger: gallery,
         start: 'top top',
-        // 2.5px of scrolling per 1px of sideways travel, so the photos drift rather than rush
-        end: () => `+=${distance() * 2.5}`,
+        // 10px of scrolling per 1px of sideways travel: the photos drift slowly past
+        end: () => `+=${distance() * GALLERY_SLOWNESS}`,
         pin: true,
         anticipatePin: 1,
         scrub: 1.2,
