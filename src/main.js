@@ -99,7 +99,7 @@ function buildBands() {
   const sy = lenis ? lenis.scroll : scrollY;
   headerH = header.getBoundingClientRect().height;
   viewH = innerHeight;
-  bands = $$('main > *, .earth, .earth > section, .map__screen, .footer, .wellness, .gallery')
+  bands = $$('main > *, .earth, .earth > section, .map__track, .footer, .wellness, .gallery')
     .map((el) => {
       let bg = null;
       for (let e = el; e && !bg && e !== document.documentElement; e = e.parentElement) bg = solid(e);
@@ -510,7 +510,6 @@ if (mp) {
 /* ---------- map: the drive from Gotri to ILIKA draws itself as you scroll ---------- */
 const map = $('[data-map]');
 if (map) {
-  const screen = $('.map__screen', map);
   const route = $('[data-map-route]', map);
   const glow = $('[data-map-route-glow]', map);
   const car = $('[data-map-car]', map);
@@ -583,11 +582,11 @@ if (map) {
   if (motion) {
     const tl = gsap.timeline({
       scrollTrigger: {
-        trigger: screen,
+        // the screen is CSS-sticky inside a taller track (no JS pinning, so no jolt when it
+        // locks in place on iOS); the drive runs while the track scrolls past
+        trigger: $('[data-map-track]', map),
         start: 'top top',
-        end: () => `+=${innerHeight * 1.6}`,
-        pin: true,
-        anticipatePin: 1,
+        end: 'bottom bottom',
         scrub: 0.8,
         invalidateOnRefresh: true,
       },
