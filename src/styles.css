@@ -1140,6 +1140,8 @@ em {
 }
 .gallery__item {
   scroll-snap-align: center;
+  /* one photo per swipe: a quick flick can't race through the whole row */
+  scroll-snap-stop: always;
   display: grid;
   gap: 10px;
 }
