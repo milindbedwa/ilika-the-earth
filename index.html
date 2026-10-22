@@ -1129,7 +1129,6 @@
                       d="M1866 345 L1866 366 L1794 545 L1777 673 L1752 803 L1747 841 L1748 882 L1742 904 L1695 999 L1685 1014 L1667 1029 L1665 1038 L1656 1038 L1650 1047 L1639 1049 L1623 1066 L1591 1081 L1501 1098 L1493 1111 L1493 1125 L1562 1296 L1578 1477 L1583 1594 L1580 1644 L1581 1654 L1593 1658 L1590 1666 L1773 1538 L1925 1599"
                       data-map-route
                     />
-                    <circle class="map__car" r="16" cx="1866" cy="345" data-map-car />
                   </svg>
                   <i data-svg="location-labels" class="map__labels"></i>
                   <button
@@ -1169,6 +1168,48 @@
                     data-name="ilika"
                     aria-label="ilika"
                   ></button>
+                  <svg class="map__route map__route--car" viewBox="0 0 3466 1858" preserveAspectRatio="none" aria-hidden="true">
+                    <defs>
+                      <linearGradient id="car-body" x1="0" y1="-1" x2="0" y2="1" gradientUnits="objectBoundingBox">
+                        <stop offset="0" stop-color="#6e2c18" />
+                        <stop offset="0.45" stop-color="#c4643f" />
+                        <stop offset="1" stop-color="#5e2414" />
+                      </linearGradient>
+                      <linearGradient id="car-roof" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0" stop-color="#e9d8bd" />
+                        <stop offset="0.5" stop-color="#fff6e6" />
+                        <stop offset="1" stop-color="#dcc6a5" />
+                      </linearGradient>
+                      <linearGradient id="car-glass" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0" stop-color="#2a1a12" />
+                        <stop offset="1" stop-color="#5b3b2c" />
+                      </linearGradient>
+                      <radialGradient id="car-beam" cx="0" cy="0.5" r="1">
+                        <stop offset="0" stop-color="#ffe7b0" stop-opacity="0.55" />
+                        <stop offset="1" stop-color="#ffe7b0" stop-opacity="0" />
+                      </radialGradient>
+                      <filter id="car-shadow" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur stdDeviation="5" />
+                      </filter>
+                    </defs>
+                    <!-- small top-down car, drawn facing +x; JS moves and turns it along the route -->
+                    <g class="map__car" data-map-car transform="translate(1866 345)">
+                      <path d="M30 -10 L120 -46 L120 46 L30 10 Z" fill="url(#car-beam)" />
+                      <rect x="-30" y="-14" width="64" height="32" rx="12" fill="#1e0f08" opacity="0.5" filter="url(#car-shadow)" />
+                      <rect x="-22" y="-19" width="10" height="5" rx="2" fill="#2a1a12" />
+                      <rect x="-22" y="14" width="10" height="5" rx="2" fill="#2a1a12" />
+                      <rect x="14" y="-19" width="10" height="5" rx="2" fill="#2a1a12" />
+                      <rect x="14" y="14" width="10" height="5" rx="2" fill="#2a1a12" />
+                      <rect x="-32" y="-16" width="64" height="32" rx="12" fill="url(#car-body)" />
+                      <rect x="-14" y="-12" width="30" height="24" rx="7" fill="url(#car-roof)" />
+                      <path d="M16 -11 Q23 0 16 11 L11 9 Q15 0 11 -9 Z" fill="url(#car-glass)" />
+                      <path d="M-14 -10 Q-19 0 -14 10 L-11 8 Q-14 0 -11 -8 Z" fill="url(#car-glass)" />
+                      <ellipse cx="30" cy="-10" rx="2.6" ry="3.4" fill="#fff4cf" />
+                      <ellipse cx="30" cy="10" rx="2.6" ry="3.4" fill="#fff4cf" />
+                      <rect x="-32.5" y="-12" width="2.5" height="6" rx="1" fill="#e2563a" />
+                      <rect x="-32.5" y="6" width="2.5" height="6" rx="1" fill="#e2563a" />
+                    </g>
+                  </svg>
                 </div>
               </div>
               <div class="map__hud" aria-live="polite">

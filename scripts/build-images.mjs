@@ -15,6 +15,9 @@ const OUT = path.join(ROOT, 'public', 'img');
 const MANIFEST = path.join(ROOT, 'src', 'image-manifest.json');
 const WIDTHS = [480, 800, 1200, 1800, 2400, 3200]; // 3200 only for sources wider than that
 const EXT = /\.(jpe?g|png|webp|avif|tiff?)$/i;
+// Transparent art that always sits on one flat colour: laying it on that colour drops the
+// alpha channel, which for detailed art (thousands of map trees) is most of the file size.
+const FLATTEN = { 'location-map': '#77361f' }; // = --map-bg in src/styles.css
 
 await fs.mkdir(OUT, { recursive: true });
 
@@ -26,15 +29,23 @@ await Promise.all(
   files.map(async (file) => {
     const name = file.replace(EXT, '');
     const input = await fs.readFile(path.join(SRC, file));
-    const hash = crypto.createHash('sha1').update(input).digest('hex').slice(0, 8);
-    const img = sharp(input, { failOn: 'none' }).rotate();
+    const flatten = FLATTEN[name];
+    const hash = crypto
+      .createHash('sha1')
+      .update(input)
+      .update(flatten || '')
+      .digest('hex')
+      .slice(0, 8);
+    let img = sharp(input, { failOn: 'none' }).rotate();
     const meta = await img.metadata();
     const srcW = meta.autoOrient?.width ?? meta.width;
     const srcH = meta.autoOrient?.height ?? meta.height;
-    const alpha = meta.hasAlpha;
+    if (flatten) img = img.flatten({ background: flatten });
+    const alpha = meta.hasAlpha && !flatten;
 
+    // standard widths below the source, plus the source itself when it's well past the last one
     const widths = WIDTHS.filter((w) => w < srcW);
-    if (!widths.length || srcW < WIDTHS.at(-1)) widths.push(Math.min(srcW, WIDTHS.at(-1)));
+    if (!widths.length || (srcW <= WIDTHS.at(-1) && srcW - widths.at(-1) > 400)) widths.push(srcW);
 
     const variants = [];
     for (const w of widths) {
@@ -47,7 +58,7 @@ await Promise.all(
         await img
           .clone()
           .resize({ width: w, withoutEnlargement: true })
-          .webp({ quality: alpha ? 90 : 78, alphaQuality: 90, effort: 5, smartSubsample: true })
+          .webp({ quality: alpha ? 90 : flatten ? 70 : 78, alphaQuality: 90, effort: 5, smartSubsample: true })
           .toFile(dest);
       }
       variants.push({ w, src: `/img/${out}` });

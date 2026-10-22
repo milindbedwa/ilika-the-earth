@@ -519,9 +519,13 @@ if (map) {
   route.style.strokeDasharray = `${total} ${total}`;
   const render = (t) => {
     route.style.strokeDashoffset = total * (1 - t);
-    const p = route.getPointAtLength(total * t);
-    car.setAttribute('cx', p.x);
-    car.setAttribute('cy', p.y);
+    // place the car on the route and turn it to face the road a little way ahead
+    const l = total * t;
+    const p = route.getPointAtLength(l);
+    const a = route.getPointAtLength(Math.min(total, l + 14));
+    const b = route.getPointAtLength(Math.max(0, l - 14));
+    const heading = (Math.atan2(a.y - b.y, a.x - b.x) * 180) / Math.PI;
+    car.setAttribute('transform', `translate(${p.x.toFixed(1)} ${p.y.toFixed(1)}) rotate(${heading.toFixed(1)}) scale(1.35)`);
     bar.style.transform = `scaleX(${t})`;
     let current = stops[0];
     stops.forEach((s) => {
