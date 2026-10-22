@@ -1172,21 +1172,37 @@ em {
   transform: scaleX(0.1);
 }
 @media (min-width: 900px) {
+  /* pinned on desktop: heading + one even row of photos, fitted to a single screen */
   .gallery {
-    padding-bottom: 40px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: calc(var(--header-h) + 6vh) 0 7vh;
+  }
+  .gallery__head {
+    flex: none;
+    margin-bottom: 4.5vh;
+  }
+  .gallery__viewport {
+    flex: 1;
+    min-height: 0;
   }
   .gallery.is-pinned .gallery__viewport {
     overflow: visible;
     scroll-snap-type: none;
   }
   .gallery__track {
-    gap: 24px;
+    height: 100%;
+    align-items: stretch;
+    gap: 28px;
   }
-  .gallery__item .media {
-    height: 64vh;
-  }
+  .gallery__item .media,
   .gallery__item--wide .media {
-    height: 50vh;
+    height: 100%;
+  }
+  .gallery__progress {
+    flex: none;
+    margin-top: 4vh;
   }
 }
 
