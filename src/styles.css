@@ -1507,11 +1507,17 @@ em {
   overflow: hidden;
 }
 .plan__drawing img {
-  width: min(100%, 440px);
+  --plan-scale: 1;
+  width: calc(min(100%, 440px) * var(--plan-scale));
   height: auto;
   background: none;
   transition: transform 0.8s var(--ease);
   cursor: zoom-in;
+}
+/* both floors at the same architectural scale: the first-floor drawing is narrower, so it
+   is shown at 86% of the ground floor's width (matched on the pool, which both share) */
+.plan__drawing--first img {
+  --plan-scale: 0.86;
 }
 .plan__drawing.is-zoomed img {
   transform: scale(1.8);
@@ -1547,7 +1553,7 @@ em {
     gap: 6vw;
   }
   .plan__drawing img {
-    width: min(100%, 520px);
+    width: calc(min(100%, 520px) * var(--plan-scale));
   }
   .plan__intro {
     grid-template-columns: 1fr 1fr;

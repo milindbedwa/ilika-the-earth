@@ -718,8 +718,9 @@ figure img {
   height: 100%;
   object-fit: contain;
 }
+/* same architectural scale as the ground floor (matched on the shared pool) */
 .plan--first .plan__drawing img {
-  height: 92%;
+  height: 96.5%;
 }
 .legend {
   font-size: 7.4pt;
