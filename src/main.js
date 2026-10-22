@@ -5,6 +5,9 @@ import { SplitText } from 'gsap/SplitText';
 import Lenis from 'lenis';
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
+// iOS shows/hides its address bar while you scroll, which fires resize events; refreshing
+// every ScrollTrigger mid-scroll is a classic source of judder, so ignore those
+ScrollTrigger.config({ ignoreMobileResize: true });
 
 const root = document.documentElement;
 const body = document.body;
@@ -68,55 +71,12 @@ addEventListener('pageshow', (e) => {
   else scrollTo(0, 0);
 });
 
-/* ---------- header: hide on scroll down, adapt over dark sections ---------- */
+/* ---------- header + browser bars ---------- */
+// The page is a stack of coloured bands (sand, linen, clay, dark photo covers, the map…).
+// Their positions and colours are measured once (and again on every ScrollTrigger refresh),
+// so scrolling only does arithmetic — no DOM reads or hit-testing per frame.
 const header = $('[data-header]');
-let lastY = scrollY;
-const darkSections = $$('[data-theme="dark"]');
-function updateHeader() {
-  const y = lenis ? lenis.scroll : scrollY;
-  const goingDown = y > lastY + 2;
-  const goingUp = y < lastY - 2;
-  if (goingDown && y > 140 && !body.classList.contains('menu-open')) header.classList.add('is-hidden');
-  else if (goingUp || y < 140) header.classList.remove('is-hidden');
-  lastY = y;
-  root.classList.toggle('header-visible', !header.classList.contains('is-hidden'));
-
-  const probe = header.offsetHeight / 2;
-  header.classList.toggle(
-    'is-dark',
-    darkSections.some((s) => {
-      const r = s.getBoundingClientRect();
-      return r.top <= probe && r.bottom >= probe;
-    }),
-  );
-}
-lenis ? lenis.on('scroll', updateHeader) : addEventListener('scroll', updateHeader, { passive: true });
-updateHeader();
-
-/* ---------- browser bars take the colour of the section under the header ---------- */
 const themeMeta = $('meta[name="theme-color"]');
-let chrome = '';
-// colour of the page at height y: { bg, grain }
-function sectionColour(y) {
-  const rotate = $('.rotate');
-  if (getComputedStyle(rotate).display !== 'none') return { bg: getComputedStyle(rotate).backgroundColor, grain: true };
-  if (body.classList.contains('menu-open')) return { bg: getComputedStyle($('[data-menu]')).backgroundColor, grain: true };
-  const stack = document.elementsFromPoint(innerWidth / 2, y);
-  for (const top of stack) {
-    if (top.closest('.header, .cursor, .rotate')) continue;
-    // nearest ancestor with a solid background, skipping photo frames
-    for (let el = top; el && el !== document.documentElement; el = el.parentElement) {
-      if (el.matches('.media, figure, img')) continue;
-      const bg = getComputedStyle(el).backgroundColor;
-      const a = bg
-        .match(/rgba?\(([^)]+)\)/)?.[1]
-        .split(',')
-        .map(Number);
-      if (a && (a[3] ?? 1) === 1) return { bg, grain: el.classList.contains('grain') };
-    }
-  }
-  return { bg: getComputedStyle($('main')).backgroundColor, grain: false };
-}
 const toHex = (rgb) =>
   '#' +
   rgb
@@ -124,37 +84,94 @@ const toHex = (rgb) =>
     .slice(0, 3)
     .map((n) => (+n).toString(16).padStart(2, '0'))
     .join('');
+const solid = (el) => {
+  const bg = getComputedStyle(el).backgroundColor;
+  const a = bg
+    .match(/rgba?\(([^)]+)\)/)?.[1]
+    .split(',')
+    .map(Number);
+  return a && (a[3] ?? 1) === 1 ? bg : null;
+};
+let bands = [];
+let headerH = 60;
+let viewH = innerHeight;
+function buildBands() {
+  const sy = lenis ? lenis.scroll : scrollY;
+  headerH = header.getBoundingClientRect().height;
+  viewH = innerHeight;
+  bands = $$('main > *, .earth, .earth > section, .map__screen, .footer, .wellness, .gallery')
+    .map((el) => {
+      let bg = null;
+      for (let e = el; e && !bg && e !== document.documentElement; e = e.parentElement) bg = solid(e);
+      // a pinned element owns its whole pin distance
+      const box = el.parentElement?.classList.contains('pin-spacer') ? el.parentElement : el;
+      const r = box.getBoundingClientRect();
+      return {
+        top: r.top + sy,
+        bottom: r.bottom + sy,
+        bg: toHex(bg || 'rgb(233,227,214)'),
+        grain: !!el.closest('.grain'),
+        dark: !!el.closest('[data-theme="dark"]'),
+      };
+    })
+    .filter((b) => b.bottom > b.top)
+    .sort((a, b) => b.bottom - b.top - (a.bottom - a.top)); // big first, so smaller (inner) bands win
+  updateBars(true);
+}
+const bandAt = (y) => {
+  let hit = null;
+  for (const b of bands) if (y >= b.top && y < b.bottom) hit = b;
+  return hit || { bg: '#e9e3d6', grain: false, dark: false };
+};
+
+const rotateMq = matchMedia('(orientation: landscape) and (max-height: 540px) and (hover: none) and (pointer: coarse)');
+let lastY = lenis ? lenis.scroll : scrollY;
+let chrome = '';
 let chromeBottom = '';
-function updateChrome() {
-  // top: the content just below the header (or the very top when it's hidden)
-  const top = sectionColour(header.classList.contains('is-hidden') ? 1 : header.getBoundingClientRect().bottom + 2);
-  const c = toHex(top.bg);
+function updateBars(force) {
+  const y = lenis ? lenis.scroll : scrollY;
+  // hide on scroll down, show on scroll up
+  const goingDown = y > lastY + 2;
+  const goingUp = y < lastY - 2;
+  if (goingDown && y > 140 && !body.classList.contains('menu-open')) header.classList.add('is-hidden');
+  else if (goingUp || y < 140) header.classList.remove('is-hidden');
+  if (goingDown || goingUp || force) root.classList.toggle('header-visible', !header.classList.contains('is-hidden'));
+  lastY = y;
+
+  const hidden = header.classList.contains('is-hidden');
+  header.classList.toggle('is-dark', bandAt(y + headerH / 2).dark);
+
+  // top bar: the content just below the header (or the very top while it's hidden)
+  let top = bandAt(y + (hidden ? 1 : headerH + 2));
+  if (rotateMq.matches || body.classList.contains('menu-open')) top = { bg: '#8a4a32', grain: true };
   header.classList.toggle('is-grain', top.grain);
-  if (c !== chrome) {
-    chrome = c;
-    themeMeta.content = c;
-    root.style.setProperty('--chrome', c);
+  if (top.bg !== chrome) {
+    chrome = top.bg;
+    themeMeta.content = chrome;
+    root.style.setProperty('--chrome', chrome);
   }
   // bottom: page background behind Safari's toolbar and the overscroll area
-  const b = toHex(sectionColour(innerHeight - 2).bg);
+  const b = bandAt(y + viewH - 2).bg;
   if (b !== chromeBottom) {
     chromeBottom = b;
     root.style.setProperty('--chrome-bottom', b);
   }
 }
-let chromeQueued = false;
-const queueChrome = () => {
-  if (chromeQueued) return;
-  chromeQueued = true;
-  requestAnimationFrame(() => {
-    chromeQueued = false;
-    updateChrome();
-  });
+const queueChrome = () => updateBars(true);
+lenis ? lenis.on('scroll', () => updateBars()) : addEventListener('scroll', () => updateBars(), { passive: true });
+rotateMq.addEventListener?.('change', queueChrome);
+ScrollTrigger.addEventListener('refresh', buildBands);
+buildBands();
+
+// no hover work while the page is moving: hit-testing content that slides under a
+// still mouse is a large share of scroll cost
+let scrollIdle;
+const onScrollHover = () => {
+  if (!body.classList.contains('is-scrolling')) body.classList.add('is-scrolling');
+  clearTimeout(scrollIdle);
+  scrollIdle = setTimeout(() => body.classList.remove('is-scrolling'), 140);
 };
-lenis ? lenis.on('scroll', queueChrome) : addEventListener('scroll', queueChrome, { passive: true });
-addEventListener('resize', queueChrome);
-header.addEventListener('transitionend', (e) => e.propertyName === 'transform' && queueChrome());
-updateChrome();
+lenis ? lenis.on('scroll', onScrollHover) : addEventListener('scroll', onScrollHover, { passive: true });
 
 // active nav link
 $$('.header__nav a').forEach((a) => {
@@ -368,6 +385,7 @@ if (gallery) {
         start: 'top top',
         end: () => `+=${distance()}`,
         pin: true,
+        anticipatePin: 1,
         scrub: 0.6,
         invalidateOnRefresh: true,
         onUpdate: (st) => (bar.style.transform = `scaleX(${Math.max(0.08, st.progress)})`),
@@ -518,25 +536,44 @@ if (map) {
   });
 
   route.style.strokeDasharray = glow.style.strokeDasharray = `${total} ${total}`;
-  const render = (t) => {
-    route.style.strokeDashoffset = glow.style.strokeDashoffset = total * (1 - t);
-    // place the car on the route and turn it to face the road a little way ahead
-    const l = total * t;
+
+  // sample the route once (position + heading), so each frame is just a lookup
+  const N = 600;
+  const lut = Array.from({ length: N + 1 }, (_, i) => {
+    const l = (total * i) / N;
     const p = route.getPointAtLength(l);
     const a = route.getPointAtLength(Math.min(total, l + 14));
     const b = route.getPointAtLength(Math.max(0, l - 14));
-    const heading = (Math.atan2(a.y - b.y, a.x - b.x) * 180) / Math.PI;
-    car.setAttribute('transform', `translate(${p.x.toFixed(1)} ${p.y.toFixed(1)}) rotate(${heading.toFixed(1)}) scale(1.35)`);
+    return { x: p.x, y: p.y, h: (Math.atan2(a.y - b.y, a.x - b.x) * 180) / Math.PI };
+  });
+  const lerpAngle = (a, b, f) => a + (((b - a + 540) % 360) - 180) * f;
+
+  let lastStop = null;
+  let lastT = -1;
+  const render = (t) => {
+    if (Math.abs(t - lastT) < 0.0004) return;
+    lastT = t;
+    const dash = total * (1 - t);
+    route.style.strokeDashoffset = glow.style.strokeDashoffset = dash;
+    const f = t * N;
+    const i = Math.min(N - 1, Math.floor(f));
+    const k = f - i;
+    const A = lut[i];
+    const B = lut[i + 1];
+    car.setAttribute(
+      'transform',
+      `translate(${(A.x + (B.x - A.x) * k).toFixed(1)} ${(A.y + (B.y - A.y) * k).toFixed(1)}) rotate(${lerpAngle(A.h, B.h, k).toFixed(1)}) scale(1.35)`,
+    );
     bar.style.transform = `scaleX(${t})`;
+
     let current = stops[0];
-    stops.forEach((s) => {
-      const reached = t >= s.at - 0.002;
-      s.classList.toggle('is-reached', reached);
-      if (reached) current = s;
-    });
+    for (const s of stops) if (t >= s.at - 0.002) current = s;
+    if (current === lastStop) return; // stops, labels and text only change at a stop
+    lastStop = current;
+    stops.forEach((s) => s.classList.toggle('is-reached', t >= s.at - 0.002));
     labels.forEach((l) => l.classList.toggle('is-lit', l.dataset.stop === current.dataset.stop));
-    if (now.textContent !== current.dataset.name) now.textContent = current.dataset.name;
-    label.textContent = t > 0.995 ? 'You have arrived' : 'The drive';
+    now.textContent = current.dataset.name;
+    label.textContent = current.dataset.at === '1' ? 'You have arrived' : 'The drive';
   };
 
   let st = null;
@@ -547,6 +584,7 @@ if (map) {
         start: 'top top',
         end: () => `+=${innerHeight * 1.6}`,
         pin: true,
+        anticipatePin: 1,
         scrub: 0.8,
         invalidateOnRefresh: true,
       },
