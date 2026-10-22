@@ -383,10 +383,11 @@ if (gallery) {
       scrollTrigger: {
         trigger: gallery,
         start: 'top top',
-        end: () => `+=${distance()}`,
+        // 2.5px of scrolling per 1px of sideways travel, so the photos drift rather than rush
+        end: () => `+=${distance() * 2.5}`,
         pin: true,
         anticipatePin: 1,
-        scrub: 0.6,
+        scrub: 1.2,
         invalidateOnRefresh: true,
         onUpdate: (st) => (bar.style.transform = `scaleX(${Math.max(0.08, st.progress)})`),
       },
