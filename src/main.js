@@ -430,18 +430,22 @@ function moveInd(btn) {
   ind.style.width = `${btn.offsetWidth}px`;
   ind.style.transform = `translateX(${btn.offsetLeft}px)`;
 }
+// Both floors share one grid cell (see .plan__panels), so switching never changes the
+// section height and the page stays exactly where it is.
 function selectTab(btn, focus) {
   tabs.forEach((t) => {
     const on = t === btn;
     t.setAttribute('aria-selected', String(on));
     t.tabIndex = on ? 0 : -1;
     const panel = $(`[data-panel="${t.dataset.tab}"]`);
-    panel.hidden = !on;
-    if (on && motion) gsap.fromTo(panel, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.9, ease: EASE });
+    panel.hidden = false;
+    panel.classList.toggle('is-active', on);
+    panel.inert = !on;
+    panel.setAttribute('aria-hidden', String(!on));
+    if (on && motion) gsap.fromTo(panel, { y: 16 }, { y: 0, duration: 0.9, ease: EASE });
   });
   moveInd(btn);
-  if (focus) btn.focus();
-  ScrollTrigger.refresh();
+  if (focus) btn.focus({ preventScroll: true });
 }
 tabs.forEach((t, i) => {
   t.addEventListener('click', () => selectTab(t));
@@ -451,6 +455,7 @@ tabs.forEach((t, i) => {
   });
 });
 if (tabs.length) {
+  selectTab(tabs[0]);
   requestAnimationFrame(() => moveInd(tabs[0]));
   addEventListener('resize', () => moveInd(tabs.find((t) => t.getAttribute('aria-selected') === 'true')));
 }
