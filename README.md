@@ -24,7 +24,6 @@ All photos live in [`/images`](images). On every build, `scripts/build-images.mj
 | `retreat-evening`                                                                                          | “Your private retreat. Every day.”                 |
 | `verandah-evening`, `pool-court`                                                                           | “Where Life Returns to Its Roots”                  |
 | `lime-plaster`                                                                                             | “Why lime plaster?”                                |
-| `material-*` (8 files)                                                                                     | Material palette grid — **low-res, replace first** |
 | `illus-vase`, `illus-seated`                                                                               | Line illustrations (transparent PNG)               |
 | `spaces-sunset`                                                                                            | “Why curated spaces?”                              |
 | `gallery-*`, `gazebo`                                                                                      | Curated spaces gallery                             |

@@ -500,19 +500,12 @@ figure img {
   display: grid;
   gap: 6mm;
 }
-.materials__copy .illus {
-  width: 76mm;
-  margin-top: 4mm;
+.materials__copy .body {
+  max-width: 100mm;
 }
-.materials__grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 3mm;
-}
-.materials__grid img {
-  width: 100%;
-  aspect-ratio: 1;
-  object-fit: cover;
+.materials__illus {
+  width: 140mm;
+  justify-self: end;
 }
 
 /* features pages */
