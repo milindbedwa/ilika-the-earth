@@ -17,24 +17,24 @@ All photos live in [`/images`](images). On every build, `scripts/build-images.mj
 
 **To swap a photo:** drop the new file into `/images` with the **same name** (any of `.jpg .png .webp .avif .tif` — delete the old one if the extension changes), commit and push. No code changes needed. Use at least **2400 px** wide for full-screen images.
 
-| File                                                                                                       | Where it appears                                   |
-| ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| `courtyard-entrance`                                                                                       | Intro — first image                                |
-| `farmhouse-front`                                                                                          | Intro — second image (also the social share image) |
-| `retreat-evening`                                                                                          | “Your private retreat. Every day.”                 |
-| `verandah-evening`, `pool-court`                                                                           | “Where Life Returns to Its Roots”                  |
-| `lime-plaster`                                                                                             | “Why lime plaster?”                                |
-| `illus-vase`, `illus-seated`                                                                               | Line illustrations (transparent PNG)               |
-| `spaces-sunset`                                                                                            | “Why curated spaces?”                              |
-| `gallery-*`, `gazebo`                                                                                      | Curated spaces gallery                             |
-| `pool-court-evening`                                                                                       | “Where Nature Meets Leisure.”                      |
-| `pool-sunset`                                                                                              | Full-width sunset with dog                         |
-| `wellness-yoga-deck`                                                                                       | “Why wellness?”                                    |
-| `ritual-yoga`, `ritual-meditation`, `ritual-sunbath`, `ritual-mudbath`, `ritual-barefoot`, `ritual-copper` | The six wellness rituals                           |
-| `clay-curves`                                                                                              | “Why sustainable design?”                          |
-| `farmhouse-evening`, `vase-shadow-wall`                                                                    | Climate responsive design                          |
-| `plan-first`                                                                                               | First-floor plan (cream lines on transparent PNG)  |
-| `location-map`                                                                                             | Illustrated location map                           |
+| File                                                                                                       | Where it appears                                                                                                   |
+| ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `courtyard-entrance`                                                                                       | Intro — first image                                                                                                |
+| `farmhouse-front`                                                                                          | Intro — second image (also the social share image)                                                                 |
+| `retreat-evening`                                                                                          | “Your private retreat. Every day.”                                                                                 |
+| `verandah-evening`, `pool-court`                                                                           | “Where Life Returns to Its Roots”                                                                                  |
+| `lime-plaster`                                                                                             | “Why lime plaster?”                                                                                                |
+| `illus-vase`, `illus-seated`                                                                               | Line illustrations (transparent PNG)                                                                               |
+| `spaces-sunset`                                                                                            | “Why curated spaces?”                                                                                              |
+| `gallery-*`, `gazebo`                                                                                      | Curated spaces gallery                                                                                             |
+| `pool-court-evening`                                                                                       | “Where Nature Meets Leisure.”                                                                                      |
+| `pool-sunset`                                                                                              | Full-width sunset with dog                                                                                         |
+| `wellness-yoga-deck`                                                                                       | “Why wellness?”                                                                                                    |
+| `ritual-yoga`, `ritual-meditation`, `ritual-sunbath`, `ritual-mudbath`, `ritual-barefoot`, `ritual-copper` | The six wellness rituals                                                                                           |
+| `clay-curves`                                                                                              | “Why sustainable design?”                                                                                          |
+| `farmhouse-evening`, `vase-shadow-wall`                                                                    | Climate responsive design                                                                                          |
+| `plan-first`                                                                                               | First-floor plan (cream lines on transparent PNG)                                                                  |
+| `location-map`                                                                                             | Location map art (transparent PNG, no text — place labels and logo are live text in `src/svg/location-labels.svg`) |
 
 Vector artwork (logo, icons, ground-floor plan, master plan) is in `src/svg` and `public/svg`. The clay backgrounds are a flat colour with a CSS grain overlay (`.grain` in `src/styles.css`), not photos.
 

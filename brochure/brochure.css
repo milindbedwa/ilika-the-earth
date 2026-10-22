@@ -844,39 +844,57 @@ figure img {
 .location-map {
   background: var(--clay);
 }
-/* map artwork (2000×987) fills the right side, centred on the route Gotri → ILIKA */
+/* transparent map artwork (3466×1858) on the clay page, centred on the route Gotri → ILIKA */
 .location-map__art {
   position: absolute;
   top: 0;
   height: 100%;
-  aspect-ratio: 2000 / 987;
+  aspect-ratio: 3466 / 1858;
   left: calc(104mm + (297mm - 104mm) / 2);
-  transform: translateX(-52%);
-  z-index: -2;
+  transform: translateX(-49.3%) scale(1.12);
+  transform-origin: 49.3% 52%;
 }
-.location-map__art img {
+.location-map__art img,
+.location-map__route,
+.location-map__labels {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
+  background: none;
 }
-.location-map__pin {
-  position: absolute;
-  left: 57.9%;
-  top: 89.3%;
-  width: 3.4mm;
-  height: 3.4mm;
-  margin: -1.7mm 0 0 -1.7mm;
-  border-radius: 50%;
-  background: var(--cream);
-  box-shadow: 0 0 0 1.6mm rgb(241 231 214 / 0.3);
+.location-map__route path {
+  fill: none;
+  stroke: #fff6e6;
+  stroke-width: 1.1mm;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
 }
-.location-map__pin svg {
-  position: absolute;
-  left: 50%;
-  bottom: 4mm;
-  width: 15mm;
-  height: auto;
-  color: var(--cream);
-  transform: translateX(-12%);
+.location-map__route circle {
+  fill: #fff6e6;
+}
+.location-map__labels .ml {
+  font-family: var(--f-sans);
+  font-weight: 600;
+  fill: rgb(241 231 214 / 0.8);
+}
+.location-map__labels .ml--big {
+  font-family: var(--f-display);
+  font-weight: 500;
+}
+.location-map__labels .ml--poi {
+  font-weight: 500;
+  fill: rgb(241 231 214 / 0.66);
+}
+.location-map__labels .ml--river {
+  fill: rgb(214 228 236 / 0.85);
+}
+.location-map__labels .ml--faint {
+  opacity: 0.55;
+}
+.location-map__labels .ml-logo {
+  color: #fffaf0;
 }
 .location-map__panel {
   position: absolute;

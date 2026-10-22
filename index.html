@@ -1116,29 +1116,59 @@
                   <img
                     data-pic="location-map"
                     alt="Illustrated map showing ILIKA near Navakhal, south of the Mahi River, reached from Gotri via Sherkhi, the Mahi River and Umeta"
-                    sizes="(min-width: 900px) 130vw, 450vw"
+                    sizes="(min-width: 900px) 190vh, 220vw"
                   />
-                  <!-- the drive, traced from the artwork (coordinates in the image's 2000×987 pixels) -->
-                  <svg class="map__route" viewBox="0 0 2000 987" preserveAspectRatio="none" aria-hidden="true">
+                  <!-- the drive, traced from the artwork (coordinates in the artwork's 3466×1858 units) -->
+                  <svg class="map__route" viewBox="0 0 3466 1858" preserveAspectRatio="none" aria-hidden="true">
                     <path
                       class="map__route-track"
-                      d="M1126 188 L1087 283 L1083 324 L1061 448 L1061 476 L1055 493 L1030 543 L1016 564 L1005 565 L1000 574 L971 588 L922 598 L916 604 L916 613 L952 698 L957 718 L965 817 L967 916 L969 918 L977 917 L1075 849 L1082 849 L1152 879"
+                      d="M1866 345 L1866 366 L1794 545 L1777 673 L1752 803 L1747 841 L1748 882 L1742 904 L1695 999 L1685 1014 L1667 1029 L1665 1038 L1656 1038 L1650 1047 L1639 1049 L1623 1066 L1591 1081 L1501 1098 L1493 1111 L1493 1125 L1562 1296 L1578 1477 L1583 1594 L1580 1644 L1581 1654 L1593 1658 L1590 1666 L1773 1538 L1925 1599"
                     />
                     <path
                       class="map__route-line"
-                      d="M1126 188 L1087 283 L1083 324 L1061 448 L1061 476 L1055 493 L1030 543 L1016 564 L1005 565 L1000 574 L971 588 L922 598 L916 604 L916 613 L952 698 L957 718 L965 817 L967 916 L969 918 L977 917 L1075 849 L1082 849 L1152 879"
+                      d="M1866 345 L1866 366 L1794 545 L1777 673 L1752 803 L1747 841 L1748 882 L1742 904 L1695 999 L1685 1014 L1667 1029 L1665 1038 L1656 1038 L1650 1047 L1639 1049 L1623 1066 L1591 1081 L1501 1098 L1493 1111 L1493 1125 L1562 1296 L1578 1477 L1583 1594 L1580 1644 L1581 1654 L1593 1658 L1590 1666 L1773 1538 L1925 1599"
                       data-map-route
                     />
-                    <circle class="map__car" r="9" cx="1126" cy="188" data-map-car />
+                    <circle class="map__car" r="16" cx="1866" cy="345" data-map-car />
                   </svg>
-                  <button class="map__stop" style="--x: 1126; --y: 188" data-at="0" data-name="Gotri" aria-label="Gotri"></button>
-                  <button class="map__stop" style="--x: 1063; --y: 435" data-name="Sherkhi" aria-label="Sherkhi"></button>
-                  <button class="map__stop" style="--x: 916; --y: 610" data-name="Mahi River" aria-label="Mahi River crossing"></button>
-                  <button class="map__stop" style="--x: 955; --y: 700" data-name="Umeta" aria-label="Umeta"></button>
-                  <button class="map__stop" style="--x: 968; --y: 916" data-name="Navakhal" aria-label="Navakhal"></button>
-                  <button class="map__stop map__stop--end" style="--x: 1152; --y: 879" data-at="1" data-name="ilika" aria-label="ilika">
-                    <i data-svg="logo"></i>
-                  </button>
+                  <i data-svg="location-labels" class="map__labels"></i>
+                  <button
+                    class="map__stop"
+                    style="--x: 1866; --y: 352"
+                    data-at="0"
+                    data-stop="gotri"
+                    data-name="Gotri"
+                    aria-label="Gotri"
+                  ></button>
+                  <button
+                    class="map__stop"
+                    style="--x: 1752; --y: 803"
+                    data-stop="sherkhi"
+                    data-name="Sherkhi"
+                    aria-label="Sherkhi"
+                  ></button>
+                  <button
+                    class="map__stop"
+                    style="--x: 1512; --y: 1160"
+                    data-stop="river"
+                    data-name="Mahi River"
+                    aria-label="Mahi River crossing"
+                  ></button>
+                  <button class="map__stop" style="--x: 1550; --y: 1250" data-stop="umeta" data-name="Umeta" aria-label="Umeta"></button>
+                  <button
+                    class="map__stop"
+                    style="--x: 1589; --y: 1662"
+                    data-stop="navakhal"
+                    data-name="Navakhal"
+                    aria-label="Navakhal"
+                  ></button>
+                  <button
+                    class="map__stop map__stop--end"
+                    style="--x: 1925; --y: 1599"
+                    data-at="1"
+                    data-name="ilika"
+                    aria-label="ilika"
+                  ></button>
                 </div>
               </div>
               <div class="map__hud" aria-live="polite">

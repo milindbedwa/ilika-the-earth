@@ -497,6 +497,7 @@ if (map) {
   const label = $('[data-map-label]', map);
   const bar = $('[data-map-bar]', map);
   const stops = $$('.map__stop', map);
+  const labels = $$('.map__labels [data-stop]', map);
   const total = route.getTotalLength();
 
   // where along the route each stop sits (0–1)
@@ -528,6 +529,7 @@ if (map) {
       s.classList.toggle('is-reached', reached);
       if (reached) current = s;
     });
+    labels.forEach((l) => l.classList.toggle('is-lit', l.dataset.stop === current.dataset.stop));
     if (now.textContent !== current.dataset.name) now.textContent = current.dataset.name;
     label.textContent = t > 0.995 ? 'You have arrived' : 'The drive';
   };
@@ -548,7 +550,7 @@ if (map) {
     tl.to(state, { t: 1, ease: 'none', duration: 1, onUpdate: () => render(state.t) }, 0).fromTo(
       cam,
       { scale: 1 },
-      { scale: () => (innerWidth < 900 ? 1.14 : 1.28), ease: 'power2.inOut', duration: 0.45 },
+      { scale: () => (innerWidth < 900 ? 1.22 : 1.35), ease: 'power2.inOut', duration: 0.45 },
       0.6,
     );
     st = tl.scrollTrigger;

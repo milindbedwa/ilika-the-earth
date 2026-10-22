@@ -24,20 +24,22 @@ await fs.mkdir(path.join(OUT, 'img'), { recursive: true });
 let html = await fs.readFile(path.join(SRC, 'brochure.html'), 'utf8');
 const sources = Object.fromEntries((await fs.readdir(IMAGES)).filter((f) => EXT.test(f)).map((f) => [f.replace(EXT, ''), f]));
 
-// Photos → JPEG (embedded as-is in the PDF, keeping it small); transparent art → PNG
+// Photos → JPEG (embedded as-is in the PDF, keeping it small); transparent art → PNG,
+// unless data-flatten="#rrggbb" puts it on that colour as a JPEG (big textured art).
 const pics = new Map();
 html = html.replace(/<img\b([^>]*?)\bdata-pic="([^"]+)"([^>]*)>/g, (m, a, name, b) => {
   if (!sources[name]) throw new Error(`Unknown image "${name}"`);
   const w = Number((m.match(/data-w="(\d+)"/) || [])[1] || 2200);
-  pics.set(name, w);
-  const rest = `${a} ${b}`.replace(/data-w="\d+"/, '').replace(/\/\s*$/, '');
+  const flatten = (m.match(/data-flatten="(#[0-9a-fA-F]{6})"/) || [])[1];
+  pics.set(name, { w, flatten });
+  const rest = `${a} ${b}`.replace(/data-w="\d+"|data-flatten="[^"]*"/g, '').replace(/\/\s*$/, '');
   return `<img ${rest} src="img/${name}.__EXT__${name}__">`;
 });
-for (const [name, w] of pics) {
+for (const [name, { w, flatten }] of pics) {
   const img = sharp(path.join(IMAGES, sources[name])).rotate();
-  const { hasAlpha } = await img.metadata();
+  const hasAlpha = (await img.metadata()).hasAlpha && !flatten;
   const ext = hasAlpha ? 'png' : 'jpg';
-  const resized = img.resize({ width: w, withoutEnlargement: true });
+  const resized = img.resize({ width: w, withoutEnlargement: true }).flatten(flatten ? { background: flatten } : false);
   await (hasAlpha ? resized.png({ compressionLevel: 9 }) : resized.jpeg({ quality: 84, mozjpeg: true })).toFile(
     path.join(OUT, 'img', `${name}.${ext}`),
   );

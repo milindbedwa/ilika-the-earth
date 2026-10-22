@@ -13,7 +13,7 @@ const ROOT = path.resolve(import.meta.dirname, '..');
 const SRC = path.join(ROOT, 'images');
 const OUT = path.join(ROOT, 'public', 'img');
 const MANIFEST = path.join(ROOT, 'src', 'image-manifest.json');
-const WIDTHS = [480, 800, 1200, 1800, 2400];
+const WIDTHS = [480, 800, 1200, 1800, 2400, 3200]; // 3200 only for sources wider than that
 const EXT = /\.(jpe?g|png|webp|avif|tiff?)$/i;
 
 await fs.mkdir(OUT, { recursive: true });

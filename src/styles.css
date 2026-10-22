@@ -1752,48 +1752,76 @@ em {
   gap: 32px;
   margin-bottom: 88px;
 }
+/* transparent artwork straight on the section's clay + grain, so the map has no edges */
 .map__screen {
   position: relative;
   width: 100%;
   height: 100svh;
   overflow: hidden;
-  background: #7d321e;
 }
-.map__screen::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  box-shadow: inset 0 0 120px rgb(50 18 8 / 0.35);
-}
-/* The artwork keeps its proportions (2000×987) and covers the screen, with its focus
-   point at the centre so the whole route stays in view. */
+/* The artwork (3466×1858) is one screen tall; its focus point — the middle of the
+   route Gotri → ILIKA — sits at the centre of the screen. */
 .map__art {
-  --ratio: 2.026;
-  --fx: 57%; /* phones: route sits left, clear of the drive card */
-  --fy: 50%;
+  --fx: 49.3%;
+  --fy: 52%;
   position: absolute;
   left: 50%;
   top: 50%;
-  width: max(100%, 100svh * var(--ratio));
-  aspect-ratio: 2000 / 987;
+  height: 100%;
+  aspect-ratio: 3466 / 1858;
   transform: translate(calc(var(--fx) * -1), calc(var(--fy) * -1));
 }
 @media (min-width: 900px) {
   .map__art {
-    --fx: 50%;
+    --fx: 51%;
   }
 }
 .map__cam {
   position: absolute;
   inset: 0;
-  transform-origin: 57.6% 89%;
+  transform-origin: 55.5% 86%;
   will-change: transform;
 }
 .map__cam img {
   width: 100%;
   height: 100%;
   background: none;
+}
+.map__labels {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.map__labels .ml {
+  font-family: var(--f-sans);
+  font-weight: 600;
+  fill: rgb(241 231 214 / 0.74);
+  transition:
+    fill 0.5s,
+    opacity 0.5s;
+}
+.map__labels .ml--big {
+  font-family: var(--f-display);
+  font-weight: 500;
+}
+.map__labels .ml--poi {
+  font-weight: 500;
+  fill: rgb(241 231 214 / 0.6);
+}
+.map__labels .ml--river {
+  fill: rgb(214 228 236 / 0.85);
+  letter-spacing: 0.04em;
+}
+.map__labels .ml--faint {
+  opacity: 0.55;
+}
+.map__labels .ml.is-lit {
+  fill: #fffaf0;
+}
+.map__labels .ml-logo {
+  color: #fffaf0;
 }
 .map__route {
   position: absolute;
@@ -1826,8 +1854,8 @@ em {
 }
 .map__stop {
   position: absolute;
-  left: calc(var(--x) / 2000 * 100%);
-  top: calc(var(--y) / 987 * 100%);
+  left: calc(var(--x) / 3466 * 100%);
+  top: calc(var(--y) / 1858 * 100%);
   width: 40px;
   height: 40px;
   margin: -20px 0 0 -20px;
@@ -1856,16 +1884,6 @@ em {
 }
 .map__stop--end.is-reached::before {
   animation: stop-ping 2.4s var(--ease) infinite;
-}
-.map__stop--end svg {
-  position: absolute;
-  left: 50%;
-  bottom: 30px;
-  width: 70px;
-  height: auto;
-  color: #fff6e6;
-  transform: translateX(-14%);
-  filter: drop-shadow(0 2px 6px rgb(50 18 8 / 0.4));
 }
 @keyframes stop-ping {
   80%,
