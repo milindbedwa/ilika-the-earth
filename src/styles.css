@@ -2296,67 +2296,18 @@ em {
   color: rgb(241 231 214 / 0.86);
 }
 .enquire {
-  width: 100%;
-  max-width: 620px;
   display: grid;
-  gap: 18px;
+  justify-items: center;
+  gap: 14px;
 }
-.enquire__row {
-  display: grid;
-  gap: 18px;
-}
-@media (min-width: 640px) {
-  .enquire__row {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-.field {
-  display: grid;
-  gap: 4px;
-  font-size: 12px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgb(241 231 214 / 0.66);
-}
-.field em {
-  font-style: normal;
-  text-transform: none;
-  letter-spacing: 0;
-  opacity: 0.7;
-}
-.field input,
-.field textarea {
-  font: inherit;
-  font-family: var(--f-sans);
-  font-size: 17px;
-  letter-spacing: 0;
-  text-transform: none;
-  color: var(--cream);
-  background: transparent;
-  border: 0;
-  border-bottom: 1px solid rgb(241 231 214 / 0.35);
-  border-radius: 0;
-  padding: 10px 0;
-  resize: none;
-  transition: border-color 0.3s;
-}
-.field input:focus,
-.field textarea:focus {
-  outline: none;
-  border-color: var(--cream);
-}
-.field.is-invalid input {
-  border-color: #f3b49a;
-}
-.enquire__submit {
-  justify-self: center;
-  margin-top: 14px;
+.enquire__whatsapp svg {
+  width: 1.35em;
+  height: 1.35em;
 }
 .enquire__note {
-  min-height: 1.5em;
   text-align: center;
   font-size: 14px;
-  color: rgb(241 231 214 / 0.8);
+  color: rgb(241 231 214 / 0.66);
 }
 .footer__cols {
   width: 100%;

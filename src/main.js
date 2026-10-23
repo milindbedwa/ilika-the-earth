@@ -668,33 +668,6 @@ if (footLogo && motion) {
   ScrollTrigger.create({ trigger: footLogo, start: 'top 82%', once: true, onEnter: () => writeInk(footLogo, pens) });
 }
 
-/* ---------- enquiry form → prefilled email ---------- */
-const form = $('[data-enquire]');
-if (form) {
-  const status = $('[data-enquire-status]', form);
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    let ok = true;
-    $$('[required]', form).forEach((f) => {
-      const bad = !f.value.trim();
-      f.closest('.field').classList.toggle('is-invalid', bad);
-      if (bad && ok) {
-        f.focus();
-        ok = false;
-      }
-    });
-    if (!ok) {
-      status.textContent = 'Please add your name and phone number.';
-      return;
-    }
-    const d = Object.fromEntries(new FormData(form));
-    const text = `Name: ${d.name}\nPhone: ${d.phone}\nEmail: ${d.email || '—'}\n\n${d.message || 'I would like to book a private viewing of ILIKA.'}`;
-    location.href = `mailto:ilikatheearth@gmail.com?subject=${encodeURIComponent('Private viewing — ILIKA')}&body=${encodeURIComponent(text)}`;
-    status.textContent = 'Thank you — your email app will open with the details ready to send.';
-  });
-  form.addEventListener('input', (e) => e.target.closest('.field')?.classList.remove('is-invalid'));
-}
-
 /* ---------- cursor + magnetic buttons (mouse only) ---------- */
 if (finePointer && motion) {
   const cursor = $('.cursor');
