@@ -1718,9 +1718,9 @@ em {
   cursor: zoom-in;
 }
 /* both floors at the same architectural scale: the first-floor drawing is narrower, so it
-   is shown at 86% of the ground floor's width (matched on the pool, which both share) */
+   is shown at 83% of the ground floor's width (measured so both pools are the same size) */
 .plan__drawing--first img {
-  --plan-scale: 0.86;
+  --plan-scale: 0.83;
 }
 .plan__drawing.is-zoomed img {
   transform: scale(1.8);
