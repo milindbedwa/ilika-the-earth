@@ -939,6 +939,15 @@ em {
   height: 100%;
   object-fit: cover;
 }
+/* the woman on the yoga deck sits right of centre — keep her in frame on portrait screens */
+#wellness .cover__media img {
+  object-position: 73% 50%;
+}
+@media (min-width: 900px) {
+  #wellness .cover__media img {
+    object-position: 50% 50%;
+  }
+}
 .cover__media::after {
   content: '';
   position: absolute;
