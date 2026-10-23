@@ -1434,61 +1434,105 @@ em {
   }
 }
 
-/* controls: a pill of dots (the active one stretches into a timer) + play/pause */
+/* controls: named tabs; the active one fills left→right as its timer runs, plus play/pause */
 .rituals__controls {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   margin-top: 28px;
+  padding-inline: var(--gutter);
 }
-.rituals__dots {
-  display: flex;
-  align-items: center;
-  height: 48px;
-  padding: 0 14px;
-  border-radius: 99px;
-  background: rgb(85 52 37 / 0.08);
-}
-.rituals__dot {
+.rituals__tabs {
   display: grid;
-  place-items: center;
-  height: 44px;
-  padding: 0 6px;
-  cursor: pointer;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  flex: 1;
+  max-width: 920px;
 }
-.rituals__dot span {
+@media (min-width: 900px) {
+  .rituals__tabs {
+    grid-template-columns: repeat(6, 1fr);
+    padding: 6px;
+    border-radius: 99px;
+    background: rgb(85 52 37 / 0.06);
+  }
+}
+.rituals__tab {
   position: relative;
-  display: block;
-  width: 8px;
-  height: 8px;
-  border-radius: 99px;
-  background: rgb(85 52 37 / 0.35);
   overflow: hidden;
+  height: 42px;
+  padding: 0 10px;
+  border-radius: 99px;
+  background: rgb(85 52 37 / 0.06);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
   transition:
-    width 0.5s var(--ease),
-    background 0.3s;
+    color 0.3s,
+    background 0.3s,
+    box-shadow 0.3s;
 }
-.rituals__dot span::after {
-  content: '';
+@media (min-width: 900px) {
+  .rituals__tab {
+    background: none;
+    font-size: 14px;
+  }
+}
+.rituals__tab:hover {
+  color: var(--earth);
+}
+.rituals__fill {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: var(--clay);
+  background: rgb(138 74 50 / 0.18);
   transform-origin: left;
   transform: scaleX(var(--p, 0));
 }
-.rituals__dot:hover span {
-  background: rgb(85 52 37 / 0.55);
+.rituals__name {
+  position: relative;
 }
-.rituals__dot.is-active span {
-  width: 44px;
-  background: rgb(85 52 37 / 0.22);
+.rituals__short {
+  display: none;
 }
-.rituals.is-paused .rituals__dot.is-active span::after {
-  transform: scaleX(1);
+@media (max-width: 899px) {
+  .rituals__controls {
+    padding-inline: 14px;
+    gap: 8px;
+  }
+  .rituals__tab {
+    padding: 0 4px;
+    font-size: 12.5px;
+  }
+  .rituals__long {
+    display: none;
+  }
+  .rituals__short {
+    display: inline;
+  }
+  .rituals__play {
+    width: 44px;
+    height: 44px;
+  }
+}
+@media (max-width: 360px) {
+  .rituals__tab {
+    font-size: 11.5px;
+  }
+}
+.rituals__tab.is-active {
+  color: var(--clay);
+  background: rgb(255 252 246 / 0.9);
+  box-shadow: inset 0 0 0 1px rgb(138 74 50 / 0.3);
+}
+.rituals.is-paused .rituals__tab.is-active .rituals__fill {
+  transform: scaleX(0);
 }
 .rituals__play {
+  flex: none;
   display: grid;
   place-items: center;
   width: 48px;

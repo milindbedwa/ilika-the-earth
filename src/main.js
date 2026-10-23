@@ -426,7 +426,7 @@ const rituals = $('[data-rituals]');
 if (rituals) {
   const viewport = $('[data-rituals-viewport]', rituals);
   const slides = $$('.ritual', rituals);
-  const dots = $$('.rituals__dot', rituals);
+  const dots = $$('.rituals__tab', rituals);
   const play = $('[data-rituals-play]', rituals);
   const DURATION = 7000; // ms per ritual while playing
   let index = 0;
@@ -440,7 +440,7 @@ if (rituals) {
     dots.forEach((d, j) => {
       d.classList.toggle('is-active', j === i);
       d.setAttribute('aria-selected', String(j === i));
-      d.firstElementChild.style.setProperty('--p', 0);
+      d.style.setProperty('--p', 0);
     });
     slides.forEach((s, j) => (s.inert = j !== i));
     elapsed = 0;
@@ -487,7 +487,7 @@ if (rituals) {
     last = t;
     if (!paused && inView && !holding && !document.hidden) {
       elapsed += dt;
-      dots[index].firstElementChild.style.setProperty('--p', Math.min(1, elapsed / DURATION));
+      dots[index].style.setProperty('--p', Math.min(1, elapsed / DURATION));
       if (elapsed >= DURATION) goTo(index + 1);
     }
     requestAnimationFrame(tick);
