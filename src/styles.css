@@ -1457,7 +1457,7 @@ em {
   }
 }
 
-/* controls: named tabs; the active one fills left→right as its timer runs, plus play/pause */
+/* controls: named tabs; the active one fills left→right as its timer runs */
 .rituals__controls {
   display: flex;
   justify-content: center;
@@ -1541,10 +1541,6 @@ em {
   .rituals__short {
     display: inline;
   }
-  .rituals__play {
-    width: 44px;
-    height: 44px;
-  }
 }
 @media (max-width: 360px) {
   .rituals__tab {
@@ -1557,33 +1553,6 @@ em {
 }
 .rituals.is-paused .rituals__tab.is-active .rituals__fill {
   transform: scaleX(0);
-}
-.rituals__play {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: rgb(85 52 37 / 0.08);
-  color: var(--earth);
-  cursor: pointer;
-  transition: background 0.3s;
-}
-.rituals__play:hover {
-  background: rgb(85 52 37 / 0.14);
-}
-.rituals__play svg {
-  width: 18px;
-  height: 18px;
-  fill: currentColor;
-}
-.rituals__play .i-play,
-.rituals.is-paused .rituals__play .i-pause {
-  display: none;
-}
-.rituals.is-paused .rituals__play .i-play {
-  display: block;
 }
 
 /* ==========================================================================

@@ -421,19 +421,18 @@ if (gallery) {
   });
 }
 
-/* ---------- wellness: ritual slider (swipe, dots, autoplay with a timer dot) ---------- */
+/* ---------- wellness: ritual slider (swipe, tabs, autoplay with a timer in the active tab) ---------- */
 const rituals = $('[data-rituals]');
 if (rituals) {
   const viewport = $('[data-rituals-viewport]', rituals);
   const slides = $$('.ritual', rituals);
   const dots = $$('.rituals__tab', rituals);
-  const play = $('[data-rituals-play]', rituals);
   const DURATION = 7000; // ms per ritual while playing
   let index = 0;
   let elapsed = 0;
   let last = 0;
   let inView = false;
-  let paused = !motion;
+  const paused = !motion; // always plays (reduced-motion users switch with the tabs)
 
   const setActive = (i) => {
     index = i;
@@ -450,11 +449,6 @@ if (rituals) {
     viewport.scrollTo({ left: slides[n].offsetLeft - viewport.offsetLeft, behavior: smooth && motion ? 'smooth' : 'auto' });
     setActive(n);
   };
-  const setPaused = (p) => {
-    paused = p;
-    rituals.classList.toggle('is-paused', p);
-    play.setAttribute('aria-label', p ? 'Play' : 'Pause');
-  };
 
   // follow swipes: whichever slide is nearest the centre is current
   let raf = 0;
@@ -470,7 +464,6 @@ if (rituals) {
     { passive: true },
   );
   dots.forEach((d, i) => d.addEventListener('click', () => goTo(i)));
-  play.addEventListener('click', () => setPaused(!paused));
   viewport.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowRight') goTo(index + 1);
     if (e.key === 'ArrowLeft') goTo(index - 1);
@@ -492,7 +485,7 @@ if (rituals) {
     }
     requestAnimationFrame(tick);
   };
-  setPaused(paused);
+  rituals.classList.toggle('is-paused', paused);
   setActive(0);
   requestAnimationFrame(tick);
 }
