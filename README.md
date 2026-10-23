@@ -57,5 +57,6 @@ All copy is in [`index.html`](index.html). Shorthand used there:
 
 ## Before launch
 
+- Add the Instagram and WhatsApp links: in `index.html`, search for `data-social` (two places: the mobile menu and the footer) and replace `href="#"` with the profile / `https://wa.me/<number>` link, adding `target="_blank" rel="noopener"`.
 - Replace the placeholder phone number `+91 00000 00000` and confirm `hello@ilika.earth` (footer + enquiry form in `index.html`, and the form handler in `src/main.js`).
 - The enquiry form opens the visitor’s email app with the details prefilled. To collect enquiries directly, point it at a form service (Formspree, Basin, a Vercel function, etc.).

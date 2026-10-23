@@ -56,6 +56,7 @@ addEventListener('keydown', (e) => e.key === 'Escape' && body.classList.contains
 document.addEventListener('click', (e) => {
   const a = e.target.closest('a[href^="#"]');
   if (!a) return;
+  if (a.getAttribute('href') === '#') return e.preventDefault(); // placeholder links (social, until added)
   const target = document.getElementById(a.getAttribute('href').slice(1));
   if (!target) return;
   e.preventDefault();

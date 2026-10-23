@@ -675,6 +675,42 @@ em {
   }
 }
 
+/* ---------- social icons (menu + footer) ---------- */
+.social {
+  display: flex;
+  gap: 10px;
+}
+.social__link {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid rgb(241 231 214 / 0.35);
+  color: var(--cream);
+  transition:
+    background 0.35s,
+    color 0.35s,
+    border-color 0.35s;
+}
+.social__link svg {
+  width: 22px;
+  height: 22px;
+}
+.social__link:hover {
+  background: var(--cream);
+  border-color: var(--cream);
+  color: var(--clay);
+}
+.footer__social {
+  margin-top: 14px;
+}
+/* the footer's text-link styles (fit-content width, underline) don't apply to icons */
+.footer__contact .social__link {
+  width: 44px;
+  background-image: none;
+}
+
 /* ==========================================================================
    Cursor (fine pointers)
    ========================================================================== */
