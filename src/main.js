@@ -689,7 +689,7 @@ if (form) {
     }
     const d = Object.fromEntries(new FormData(form));
     const text = `Name: ${d.name}\nPhone: ${d.phone}\nEmail: ${d.email || '—'}\n\n${d.message || 'I would like to book a private viewing of ILIKA.'}`;
-    location.href = `mailto:hello@ilika.earth?subject=${encodeURIComponent('Private viewing — ILIKA')}&body=${encodeURIComponent(text)}`;
+    location.href = `mailto:ilikatheearth@gmail.com?subject=${encodeURIComponent('Private viewing — ILIKA')}&body=${encodeURIComponent(text)}`;
     status.textContent = 'Thank you — your email app will open with the details ready to send.';
   });
   form.addEventListener('input', (e) => e.target.closest('.field')?.classList.remove('is-invalid'));
