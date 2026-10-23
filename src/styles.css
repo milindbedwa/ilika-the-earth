@@ -1268,107 +1268,99 @@ em {
    ========================================================================== */
 .wellness {
   background: var(--linen);
-  padding-block: var(--sec) 40px;
+  padding-block: var(--sec);
 }
 .wellness__head {
   display: grid;
   gap: 22px;
   justify-items: center;
   text-align: center;
-  margin-bottom: 64px;
+  margin-bottom: 56px;
 }
 .wellness__head .h-1 {
   max-width: 13em;
 }
-.rituals-nav {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  padding: 10px var(--gutter);
-  background: rgb(242 238 228 / 0.97);
-  border-block: 1px solid var(--line);
-  transition: top 0.7s var(--ease);
+/* Six rituals as a horizontal slider: one ritual per screen, swipe or use the dots */
+.rituals {
+  --slide-pad: var(--gutter);
 }
-.rituals-nav::-webkit-scrollbar {
+.rituals__viewport {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  outline: none;
+}
+.rituals__viewport::-webkit-scrollbar {
   display: none;
 }
-.header-visible .rituals-nav {
-  top: calc(var(--header-h) + env(safe-area-inset-top));
-}
-.rituals-nav a {
-  flex: none;
-  padding: 7px 14px;
-  border-radius: 99px;
-  font-size: 13.5px;
-  font-weight: 500;
-  color: var(--muted);
-  transition:
-    background 0.4s,
-    color 0.4s;
-}
-.rituals-nav a.is-active {
-  background: var(--clay);
-  color: var(--cream);
-}
-@media (min-width: 900px) {
-  .rituals-nav {
-    justify-content: center;
-  }
-}
-
 .ritual {
-  padding-block: 88px 24px;
-  scroll-margin-top: 120px;
-}
-.ritual + .ritual {
-  border-top: 1px solid var(--line);
-  margin-inline: var(--gutter);
-}
-.ritual + .ritual .ritual__head,
-.ritual + .ritual .features {
-  padding-inline: 0;
-}
-.ritual + .ritual .ritual__img {
-  margin-inline: calc(var(--gutter) * -1);
+  flex: 0 0 100%;
+  min-width: 0;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+  display: grid;
+  align-content: start;
+  gap: 18px;
+  padding: 8px var(--slide-pad) 0;
 }
 .ritual__head {
   display: grid;
-  gap: 12px;
-  margin-bottom: 36px;
+  gap: 8px;
 }
 .ritual__no {
   font-family: var(--f-display);
-  font-size: 14px;
+  font-size: 13px;
   color: var(--clay);
 }
 .ritual__title {
-  font-size: clamp(2.8rem, 8vw, 5.4rem);
-  line-height: 0.98;
+  font-size: clamp(2.2rem, 7vw, 4.4rem);
+  line-height: 1;
   color: var(--earth);
 }
 .ritual__tag {
   color: var(--clay);
-  max-width: 30em;
+  max-width: 34em;
 }
-.ritual__hi {
-  font-family: var(--f-serif);
-  font-size: 1.05rem;
-  color: var(--muted);
-}
+/* the photo is cropped to a band so the whole ritual fits on one screen */
 .ritual__img {
-  aspect-ratio: 4 / 3;
-  margin-bottom: 52px;
+  height: clamp(170px, 26svh, 300px);
+  border-radius: 2px;
+}
+.ritual__img img {
+  object-position: 50% 45%;
+}
+.ritual__features {
+  grid-template-columns: 1fr 1fr;
+  gap: 18px 16px;
+}
+.ritual__features .feature {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4px;
+}
+.ritual__features .feature__icon {
+  width: 22px;
+  height: 22px;
+  margin: 0 0 2px;
+}
+.ritual__features h4 {
+  font-size: 1.02rem;
+  line-height: 1.2;
+}
+.ritual__features p {
+  grid-column: auto;
+  font-size: 0.84rem;
+  line-height: 1.45;
 }
 @media (min-width: 900px) {
   .ritual {
-    padding-block: 140px 40px;
+    gap: 28px;
+    padding-top: 12px;
   }
   .ritual__head {
-    grid-template-columns: 1fr minmax(260px, 380px);
+    grid-template-columns: 1fr minmax(260px, 420px);
     column-gap: 40px;
     align-items: end;
   }
@@ -1376,16 +1368,151 @@ em {
     grid-column: 1 / -1;
   }
   .ritual__title {
-    grid-row: 2 / 4;
+    grid-row: 2;
   }
-  .ritual__tag,
-  .ritual__hi {
+  .ritual__tag {
     grid-column: 2;
+    grid-row: 2;
   }
   .ritual__img {
-    aspect-ratio: 21 / 9;
-    margin-bottom: 72px;
+    height: clamp(220px, 34vh, 400px);
   }
+  .ritual__features {
+    grid-template-columns: repeat(4, 1fr);
+    column-gap: 40px;
+  }
+  .ritual__features .feature__icon {
+    width: 28px;
+    height: 28px;
+  }
+  .ritual__features h4 {
+    font-size: 1.25rem;
+  }
+  .ritual__features p {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 899px) {
+  /* phones: everything for one ritual on one screen */
+  .ritual {
+    gap: 12px;
+    padding-top: 0;
+  }
+  .ritual__no {
+    display: none; /* the dots already say where you are */
+  }
+  .ritual__head {
+    gap: 4px;
+  }
+  .ritual__title {
+    font-size: 2rem;
+  }
+  .ritual__img {
+    height: clamp(120px, 20svh, 220px);
+  }
+  .ritual__features {
+    gap: 12px 14px;
+  }
+  .ritual__features h4 {
+    font-size: 0.98rem;
+  }
+  .ritual__features p {
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+  .rituals__controls {
+    margin-top: 14px;
+  }
+}
+@media (max-width: 899px) and (max-height: 700px) {
+  .ritual__img {
+    height: 15svh;
+  }
+  .ritual__tag {
+    font-size: 10px;
+  }
+}
+
+/* controls: a pill of dots (the active one stretches into a timer) + play/pause */
+.rituals__controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 28px;
+}
+.rituals__dots {
+  display: flex;
+  align-items: center;
+  height: 48px;
+  padding: 0 14px;
+  border-radius: 99px;
+  background: rgb(85 52 37 / 0.08);
+}
+.rituals__dot {
+  display: grid;
+  place-items: center;
+  height: 44px;
+  padding: 0 6px;
+  cursor: pointer;
+}
+.rituals__dot span {
+  position: relative;
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-radius: 99px;
+  background: rgb(85 52 37 / 0.35);
+  overflow: hidden;
+  transition:
+    width 0.5s var(--ease),
+    background 0.3s;
+}
+.rituals__dot span::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--clay);
+  transform-origin: left;
+  transform: scaleX(var(--p, 0));
+}
+.rituals__dot:hover span {
+  background: rgb(85 52 37 / 0.55);
+}
+.rituals__dot.is-active span {
+  width: 44px;
+  background: rgb(85 52 37 / 0.22);
+}
+.rituals.is-paused .rituals__dot.is-active span::after {
+  transform: scaleX(1);
+}
+.rituals__play {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgb(85 52 37 / 0.08);
+  color: var(--earth);
+  cursor: pointer;
+  transition: background 0.3s;
+}
+.rituals__play:hover {
+  background: rgb(85 52 37 / 0.14);
+}
+.rituals__play svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+.rituals__play .i-play,
+.rituals.is-paused .rituals__play .i-pause {
+  display: none;
+}
+.rituals.is-paused .rituals__play .i-play {
+  display: block;
 }
 
 /* ==========================================================================

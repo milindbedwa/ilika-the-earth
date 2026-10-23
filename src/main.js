@@ -421,26 +421,80 @@ if (gallery) {
   });
 }
 
-/* ---------- wellness: ritual chips follow the scroll ---------- */
-const ritualNav = $('[data-rituals-nav]');
-if (ritualNav) {
-  const chips = $$('a', ritualNav);
-  chips.forEach((chip) => {
-    const sec = document.getElementById(chip.getAttribute('href').slice(1));
-    ScrollTrigger.create({
-      trigger: sec,
-      start: 'top 55%',
-      end: 'bottom 55%',
-      onToggle: (st) => {
-        chip.classList.toggle('is-active', st.isActive);
-        if (st.isActive)
-          ritualNav.scrollTo({
-            left: chip.offsetLeft - (ritualNav.clientWidth - chip.offsetWidth) / 2,
-            behavior: motion ? 'smooth' : 'auto',
-          });
-      },
+/* ---------- wellness: ritual slider (swipe, dots, autoplay with a timer dot) ---------- */
+const rituals = $('[data-rituals]');
+if (rituals) {
+  const viewport = $('[data-rituals-viewport]', rituals);
+  const slides = $$('.ritual', rituals);
+  const dots = $$('.rituals__dot', rituals);
+  const play = $('[data-rituals-play]', rituals);
+  const DURATION = 7000; // ms per ritual while playing
+  let index = 0;
+  let elapsed = 0;
+  let last = 0;
+  let inView = false;
+  let paused = !motion;
+
+  const setActive = (i) => {
+    index = i;
+    dots.forEach((d, j) => {
+      d.classList.toggle('is-active', j === i);
+      d.setAttribute('aria-selected', String(j === i));
+      d.firstElementChild.style.setProperty('--p', 0);
     });
+    slides.forEach((s, j) => (s.inert = j !== i));
+    elapsed = 0;
+  };
+  const goTo = (i, smooth = true) => {
+    const n = (i + slides.length) % slides.length;
+    viewport.scrollTo({ left: slides[n].offsetLeft - viewport.offsetLeft, behavior: smooth && motion ? 'smooth' : 'auto' });
+    setActive(n);
+  };
+  const setPaused = (p) => {
+    paused = p;
+    rituals.classList.toggle('is-paused', p);
+    play.setAttribute('aria-label', p ? 'Play' : 'Pause');
+  };
+
+  // follow swipes: whichever slide is nearest the centre is current
+  let raf = 0;
+  viewport.addEventListener(
+    'scroll',
+    () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const i = Math.round(viewport.scrollLeft / viewport.clientWidth);
+        if (i !== index) setActive(Math.max(0, Math.min(slides.length - 1, i)));
+      });
+    },
+    { passive: true },
+  );
+  dots.forEach((d, i) => d.addEventListener('click', () => goTo(i)));
+  play.addEventListener('click', () => setPaused(!paused));
+  viewport.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight') goTo(index + 1);
+    if (e.key === 'ArrowLeft') goTo(index - 1);
   });
+  // a hand on the slider holds the timer
+  let holding = false;
+  viewport.addEventListener('pointerdown', () => (holding = true));
+  addEventListener('pointerup', () => (holding = false));
+
+  // the timer only runs while the slider is on screen
+  new IntersectionObserver(([e]) => (inView = e.isIntersecting), { threshold: 0.5 }).observe(viewport);
+  const tick = (t) => {
+    const dt = last ? t - last : 0;
+    last = t;
+    if (!paused && inView && !holding && !document.hidden) {
+      elapsed += dt;
+      dots[index].firstElementChild.style.setProperty('--p', Math.min(1, elapsed / DURATION));
+      if (elapsed >= DURATION) goTo(index + 1);
+    }
+    requestAnimationFrame(tick);
+  };
+  setPaused(paused);
+  setActive(0);
+  requestAnimationFrame(tick);
 }
 
 /* ---------- plan tabs + zoom ---------- */
