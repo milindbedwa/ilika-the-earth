@@ -1413,35 +1413,39 @@ em {
 }
 
 @media (max-width: 899px) {
-  /* phones: everything for one ritual on one screen */
+  /* phones: one ritual per screen; spacing grows with the screen's height so taller
+     phones get more air and shorter ones still fit */
   .ritual {
-    gap: 12px;
+    gap: clamp(14px, 3svh, 30px);
     padding-top: 0;
   }
   .ritual__no {
-    display: none; /* the dots already say where you are */
+    display: none; /* the tabs already say where you are */
   }
   .ritual__head {
-    gap: 4px;
+    gap: clamp(6px, 1.2svh, 12px);
   }
   .ritual__title {
     font-size: 2rem;
   }
   .ritual__img {
-    height: clamp(120px, 20svh, 220px);
+    height: clamp(130px, 22svh, 240px);
   }
   .ritual__features {
-    gap: 12px 14px;
+    gap: clamp(16px, 3.2svh, 34px) 16px;
+  }
+  .ritual__features .feature {
+    gap: 6px;
+  }
+  .ritual__features .feature__icon {
+    margin-bottom: 4px;
   }
   .ritual__features h4 {
     font-size: 0.98rem;
   }
   .ritual__features p {
     font-size: 0.8rem;
-    line-height: 1.4;
-  }
-  .rituals__controls {
-    margin-top: 28px;
+    line-height: 1.45;
   }
 }
 @media (max-width: 899px) and (max-height: 700px) {
@@ -1523,6 +1527,7 @@ em {
 }
 @media (max-width: 899px) {
   .rituals__controls {
+    margin-top: clamp(24px, 5svh, 48px);
     padding-inline: 14px;
     gap: 8px;
   }
