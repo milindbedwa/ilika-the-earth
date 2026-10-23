@@ -1331,6 +1331,25 @@ em {
 .ritual__img img {
   object-position: 50% 45%;
 }
+/* each photo cropped on its subject (x% y% of the photo stays in the band) */
+#ritual-yoga .ritual__img img {
+  object-position: 50% 48%; /* the woman seated on the deck */
+}
+#ritual-meditation .ritual__img img {
+  object-position: 40% 56%; /* the mudra hand resting on the knee */
+}
+#ritual-sunbath .ritual__img img {
+  object-position: 56% 60%; /* the lounger by the reflecting pool */
+}
+#ritual-mudbath .ritual__img img {
+  object-position: 38% 66%; /* the bather in the tub */
+}
+#ritual-barefoot .ritual__img img {
+  object-position: 62% 74%; /* bare feet on the grass */
+}
+#ritual-copper .ritual__img img {
+  object-position: 48% 70%; /* foot and copper toe ring */
+}
 .ritual__features {
   grid-template-columns: 1fr 1fr;
   gap: 18px 16px;
