@@ -1273,8 +1273,8 @@ em {
 .wellness__head {
   display: grid;
   gap: 22px;
-  justify-items: center;
-  text-align: center;
+  justify-items: start;
+  text-align: left;
   margin-bottom: 56px;
 }
 .wellness__head .h-1 {
