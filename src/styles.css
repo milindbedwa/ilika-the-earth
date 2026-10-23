@@ -948,6 +948,14 @@ em {
     object-position: 50% 50%;
   }
 }
+/* the pots stand at the photo's left edge: mirrored so they sit clear of the left-aligned copy,
+   and cropped on them on portrait screens */
+#materials .cover__media {
+  transform: scaleX(-1);
+}
+#materials .cover__media img {
+  object-position: 22% 50%;
+}
 .cover__media::after {
   content: '';
   position: absolute;
