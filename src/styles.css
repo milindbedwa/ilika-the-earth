@@ -1446,8 +1446,9 @@ em {
     grid-column: 2;
     grid-row: 2;
   }
+  /* fills the screen's spare height so tall screens (iPad Pro portrait) show more photo */
   .ritual__img {
-    height: clamp(220px, 34vh, 400px);
+    height: clamp(220px, max(34vh, 100svh - 560px), 680px);
   }
   .ritual__features {
     grid-template-columns: repeat(4, 1fr);
@@ -1469,7 +1470,7 @@ em {
   /* phones: one ritual per screen; spacing grows with the screen's height so taller
      phones get more air and shorter ones still fit */
   .ritual {
-    gap: clamp(14px, 3svh, 30px);
+    gap: clamp(12px, 2.4svh, 26px);
     padding-top: 0;
   }
   .ritual__no {
@@ -1481,8 +1482,9 @@ em {
   .ritual__title {
     font-size: 2rem;
   }
+  /* takes the height the rest of the slide leaves free, so taller phones show more photo */
   .ritual__img {
-    height: clamp(130px, 22svh, 240px);
+    height: clamp(130px, 100svh - 610px, 300px);
   }
   .ritual__features {
     gap: clamp(16px, 3.2svh, 34px) 16px;
@@ -1499,6 +1501,12 @@ em {
   .ritual__features p {
     font-size: 0.8rem;
     line-height: 1.45;
+  }
+}
+@media (min-width: 600px) and (max-width: 899px) {
+  /* tablets in portrait (iPad mini/Air): far more height to give the photo */
+  .ritual__img {
+    height: clamp(240px, 100svh - 580px, 620px);
   }
 }
 @media (max-width: 899px) and (max-height: 700px) {
@@ -1580,7 +1588,7 @@ em {
 }
 @media (max-width: 899px) {
   .rituals__controls {
-    margin-top: clamp(24px, 5svh, 48px);
+    margin-top: clamp(20px, 3svh, 40px);
     padding-inline: 14px;
     gap: 8px;
   }
