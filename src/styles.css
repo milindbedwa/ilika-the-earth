@@ -1626,9 +1626,23 @@ em {
   gap: 18px;
   margin-bottom: 64px;
 }
-.climate__end {
+/* closing row of material details: two portraits and a wide still life (wide one below on phones) */
+.climate__grid {
   margin-top: var(--sec);
+  padding-bottom: clamp(56px, 8vw, 120px);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.climate__grid .media {
   aspect-ratio: 4 / 5;
+}
+.climate__grid .climate__grid-wide {
+  grid-column: 1 / -1;
+  aspect-ratio: 3 / 2;
+}
+.climate__grid-wide img {
+  object-position: 72% 60%; /* the vase and bowl on the ledge */
 }
 @media (min-width: 900px) {
   .climate__img {
@@ -1636,8 +1650,15 @@ em {
     max-width: 1200px;
     margin: 0 auto 140px;
   }
-  .climate__end {
-    aspect-ratio: 21 / 9;
+  .climate__grid {
+    grid-template-columns: 1fr 1fr 2fr;
+    gap: 16px;
+  }
+  .climate__grid .media,
+  .climate__grid .climate__grid-wide {
+    grid-column: auto;
+    aspect-ratio: auto;
+    height: min(36vw, 600px);
   }
 }
 
