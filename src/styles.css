@@ -1734,8 +1734,11 @@ em {
   transition: transform 0.8s var(--ease);
   cursor: zoom-in;
 }
-/* both floors at the same architectural scale: the first-floor drawing is narrower, so it
-   is shown at 83% of the ground floor's width (measured so both pools are the same size) */
+/* both floors at the same architectural scale (measured so both pools are the same size):
+   each drawing is shown at its share of the original 188-unit-wide ground-floor sheet */
+.plan__drawing--ground img {
+  --plan-scale: 0.9415; /* 177 / 188 */
+}
 .plan__drawing--first img {
   --plan-scale: 0.83;
 }
