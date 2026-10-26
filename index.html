@@ -1014,65 +1014,123 @@
             </div>
           </div>
 
-          <h3 class="label plan__kf">Key features</h3>
-          <ol class="numbered" data-stagger>
-            <li>
-              <span>01</span>
-              <h4>Single-level living</h4>
-              <p>
-                An expansive ground-floor layout eliminates unnecessary vertical movement and creates an effortless relationship between
-                every space.
-              </p>
-            </li>
-            <li>
-              <span>02</span>
-              <h4>Central social core</h4>
-              <p>Living, dining and kitchen form the heart of the residence, encouraging interaction and shared experiences.</p>
-            </li>
-            <li>
-              <span>03</span>
-              <h4>Private bedroom wings</h4>
-              <p>Two bedroom suites are positioned away from the central social zone for privacy and tranquillity.</p>
-            </li>
-            <li>
-              <span>04</span>
-              <h4>Indoor–outdoor continuity</h4>
-              <p>Living spaces open towards verandahs, decks, landscape and the swimming pool.</p>
-            </li>
-            <li>
-              <span>05</span>
-              <h4>Resort-like pool experience</h4>
-              <p>The central pool becomes a visual and experiential anchor for the residence.</p>
-            </li>
-            <li>
-              <span>06</span>
-              <h4>Climate-responsive planning</h4>
-              <p>Orientation, openings and transitional outdoor spaces encourage daylight, ventilation and shaded living.</p>
-            </li>
-            <li>
-              <span>07</span>
-              <h4>Multiple outdoor experiences</h4>
-              <p>
-                Verandahs and decks provide opportunities for morning sitting, poolside relaxation, evening gatherings and quiet personal
-                time.
-              </p>
-            </li>
-            <li>
-              <span>08</span>
-              <h4>Privacy without isolation</h4>
-              <p>The bedroom wings remain private while maintaining visual and physical connection with the central landscape.</p>
-            </li>
-            <li>
-              <span>09</span>
-              <h4>Flexible family living</h4>
-              <p>The generous central spaces can accommodate everyday family life as well as larger gatherings.</p>
-            </li>
-            <li>
-              <span>10</span>
-              <h4>A versatile first floor</h4>
-              <p>The first-floor multi room can be used as a studio or a projector room.</p>
-            </li>
-          </ol>
+          <!-- each floor's features; shown with its tab (see "plan tabs" in src/main.js) -->
+          <div class="plan__kf-panels">
+            <div data-kf="ground">
+              <h3 class="label plan__kf">Key features</h3>
+              <ol class="numbered" data-stagger>
+                <li>
+                  <span>01</span>
+                  <h4>Single-level living</h4>
+                  <p>
+                    An expansive ground-floor layout eliminates unnecessary vertical movement and creates an effortless relationship between
+                    every space.
+                  </p>
+                </li>
+                <li>
+                  <span>02</span>
+                  <h4>Central social core</h4>
+                  <p>Living, dining and kitchen form the heart of the residence, encouraging interaction and shared experiences.</p>
+                </li>
+                <li>
+                  <span>03</span>
+                  <h4>Private bedroom wings</h4>
+                  <p>Two bedroom suites are positioned away from the central social zone for privacy and tranquillity.</p>
+                </li>
+                <li>
+                  <span>04</span>
+                  <h4>Indoor–outdoor continuity</h4>
+                  <p>Living spaces open towards verandahs, decks, landscape and the swimming pool.</p>
+                </li>
+                <li>
+                  <span>05</span>
+                  <h4>Resort-like pool experience</h4>
+                  <p>The central pool becomes a visual and experiential anchor for the residence.</p>
+                </li>
+                <li>
+                  <span>06</span>
+                  <h4>Climate-responsive planning</h4>
+                  <p>Orientation, openings and transitional outdoor spaces encourage daylight, ventilation and shaded living.</p>
+                </li>
+                <li>
+                  <span>07</span>
+                  <h4>Multiple outdoor experiences</h4>
+                  <p>
+                    Verandahs and decks provide opportunities for morning sitting, poolside relaxation, evening gatherings and quiet
+                    personal time.
+                  </p>
+                </li>
+                <li>
+                  <span>08</span>
+                  <h4>Privacy without isolation</h4>
+                  <p>The bedroom wings remain private while maintaining visual and physical connection with the central landscape.</p>
+                </li>
+                <li>
+                  <span>09</span>
+                  <h4>Flexible family living</h4>
+                  <p>The generous central spaces can accommodate everyday family life as well as larger gatherings.</p>
+                </li>
+              </ol>
+            </div>
+            <div data-kf="first" hidden>
+              <h3 class="label plan__kf">First floor · Your personal wellness retreat</h3>
+              <ol class="numbered" data-stagger>
+                <li>
+                  <span>01</span>
+                  <h4>Multipurpose living space</h4>
+                  <p>
+                    A versatile space for music, recreation, reading and personal pursuits, which can also be used as a studio or a
+                    projector room.
+                  </p>
+                </li>
+                <li>
+                  <span>02</span>
+                  <h4>Music &amp; play zone</h4>
+                  <p>Unwind with your favourite melodies or enjoy moments of playful leisure.</p>
+                </li>
+                <li>
+                  <span>03</span>
+                  <h4>Personal reading corner</h4>
+                  <p>A peaceful retreat to read, reflect and reconnect with yourself.</p>
+                </li>
+                <li>
+                  <span>04</span>
+                  <h4>Sunbath experience</h4>
+                  <p>Embrace natural sunlight and enjoy moments of warmth and relaxation.</p>
+                </li>
+                <li>
+                  <span>05</span>
+                  <h4>Mud bath &amp; natural wellness</h4>
+                  <p>Create a rejuvenating experience inspired by nature and traditional wellness practices.</p>
+                </li>
+                <li>
+                  <span>06</span>
+                  <h4>Private seating retreat</h4>
+                  <p>An intimate corner for solitude, conversations or simply doing nothing.</p>
+                </li>
+                <li>
+                  <span>07</span>
+                  <h4>Open on three sides</h4>
+                  <p>Experience an uninterrupted connection with the surrounding landscape.</p>
+                </li>
+                <li>
+                  <span>08</span>
+                  <h4>All-day natural ventilation</h4>
+                  <p>Welcome fresh air and a naturally refreshing atmosphere throughout the day.</p>
+                </li>
+                <li>
+                  <span>09</span>
+                  <h4>Monsoon experience</h4>
+                  <p>Feel the magic of the rains, listen to the rhythm of raindrops and enjoy nature from your private retreat.</p>
+                </li>
+                <li>
+                  <span>10</span>
+                  <h4>A space that adapts to you</h4>
+                  <p>From quiet mornings to leisurely afternoons, a setting designed around your changing moods.</p>
+                </li>
+              </ol>
+            </div>
+          </div>
         </section>
 
         <!-- ============ 07 · MASTER PLAN ============ -->

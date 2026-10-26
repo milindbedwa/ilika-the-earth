@@ -502,6 +502,7 @@ function moveInd(btn) {
 // Both floors share one grid cell (see .plan__panels), so switching never changes the
 // section height and the page stays exactly where it is.
 function selectTab(btn, focus) {
+  let resized = false;
   tabs.forEach((t) => {
     const on = t === btn;
     t.setAttribute('aria-selected', String(on));
@@ -512,7 +513,16 @@ function selectTab(btn, focus) {
     panel.inert = !on;
     panel.setAttribute('aria-hidden', String(!on));
     if (on && motion) gsap.fromTo(panel, { y: 16 }, { y: 0, duration: 0.9, ease: EASE });
+    // the floor's own feature list below the plan (this one may change the page height,
+    // but only below the tabs, so the view stays put; triggers further down are re-measured)
+    const kf = $(`[data-kf="${t.dataset.tab}"]`);
+    if (kf && kf.hidden === on) {
+      kf.hidden = !on;
+      resized = true;
+      if (on && motion) gsap.to(kf.querySelectorAll('.numbered > li'), { opacity: 1, y: 0, duration: 1, ease: EASE, stagger: 0.05 });
+    }
   });
+  if (resized) ScrollTrigger.refresh();
   moveInd(btn);
   if (focus) btn.focus({ preventScroll: true });
 }
