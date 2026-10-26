@@ -1660,6 +1660,14 @@ em {
 .climate__grid-wide img {
   object-position: 72% 60%; /* the vase and bowl on the ledge */
 }
+/* a full-width second row: the garden pavilion with the farmhouse behind */
+.climate__grid .climate__grid-full {
+  grid-column: 1 / -1;
+  aspect-ratio: 3 / 2;
+}
+.climate__grid-full img {
+  object-position: 50% 62%;
+}
 @media (min-width: 900px) {
   .climate__img {
     aspect-ratio: 16 / 9;
@@ -1675,6 +1683,9 @@ em {
     grid-column: auto;
     aspect-ratio: auto;
     height: min(36vw, 600px);
+  }
+  .climate__grid .climate__grid-full {
+    grid-column: 1 / -1;
   }
 }
 
