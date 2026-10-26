@@ -1008,6 +1008,9 @@ em {
   border: 8px solid var(--sand);
   border-width: 8px 0 0 8px;
 }
+.philosophy__img-b img {
+  object-position: 58% 50%; /* the sunken lounge and living room, as the earlier portrait crop */
+}
 .philosophy__copy {
   grid-column: 1 / -1;
 }
