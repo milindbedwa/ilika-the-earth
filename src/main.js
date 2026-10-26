@@ -3,6 +3,10 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SplitText } from 'gsap/SplitText';
 import Lenis from 'lenis';
+import { inject as injectAnalytics } from '@vercel/analytics';
+
+// Vercel Web Analytics: privacy-friendly page views (enabled in the Vercel project's Analytics tab)
+injectAnalytics();
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
 // iOS shows/hides its address bar while you scroll, which fires resize events; refreshing
