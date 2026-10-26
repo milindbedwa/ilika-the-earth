@@ -1485,9 +1485,12 @@ em {
   .ritual__title {
     font-size: 2rem;
   }
-  /* takes the height the rest of the slide leaves free, so taller phones show more photo */
+  /* takes the height the rest of the slide leaves free, so taller phones show more photo.
+     The header hides while scrolling down, so only the slide itself is reserved; and it is
+     sized halfway between the screen with Safari's toolbar shown and collapsed (it collapses
+     on the way down here) */
   .ritual__img {
-    height: clamp(130px, 100svh - 610px, 300px);
+    height: clamp(140px, (100svh + 100lvh) / 2 - 520px, 340px);
   }
   .ritual__features {
     gap: clamp(16px, 3.2svh, 34px) 16px;
@@ -1513,11 +1516,13 @@ em {
   }
 }
 @media (max-width: 899px) and (max-height: 700px) {
-  .ritual__img {
-    height: 15svh;
-  }
   .ritual__tag {
     font-size: 10px;
+  }
+}
+@media (max-width: 899px) and (max-height: 600px) {
+  .ritual__img {
+    height: 15svh;
   }
 }
 
