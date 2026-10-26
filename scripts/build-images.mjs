@@ -43,9 +43,10 @@ await Promise.all(
     if (flatten) img = img.flatten({ background: flatten });
     const alpha = meta.hasAlpha && !flatten;
 
-    // standard widths below the source, plus the source itself when it's well past the last one
+    // standard widths below the source, plus the source itself (full resolution for
+    // high-density phone and iPad screens) unless it's past the largest standard width
     const widths = WIDTHS.filter((w) => w < srcW);
-    if (!widths.length || (srcW <= WIDTHS.at(-1) && srcW - widths.at(-1) > 400)) widths.push(srcW);
+    if (srcW <= WIDTHS.at(-1)) widths.push(srcW);
 
     const variants = [];
     for (const w of widths) {
@@ -58,7 +59,7 @@ await Promise.all(
         await img
           .clone()
           .resize({ width: w, withoutEnlargement: true })
-          .webp({ quality: alpha ? 90 : flatten ? 70 : 78, alphaQuality: 90, effort: 5, smartSubsample: true })
+          .webp({ quality: alpha ? 90 : flatten ? 70 : 82, alphaQuality: 90, effort: 5, smartSubsample: true })
           .toFile(dest);
       }
       variants.push({ w, src: `/img/${out}` });

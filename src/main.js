@@ -18,6 +18,28 @@ const finePointer = matchMedia('(hover: hover) and (pointer: fine)').matches;
 const mm = gsap.matchMedia();
 const EASE = 'expo.out';
 
+/* ---------- photo sizes from the real layout ----------
+   A cover-cropped photo on a tall screen (phones, iPads) is drawn far wider than the screen,
+   so the static `sizes` hints under-ask there. Before the lazy photos load, tell the browser
+   the width each one is really drawn at, so it downloads a sharp enough file. */
+function fitPhotoSizes() {
+  for (const img of $$('img[srcset]')) {
+    const w = img.offsetWidth,
+      h = img.offsetHeight;
+    if (!w || !h) continue; // not laid out yet (e.g. the hidden plan tab): keep its hint
+    const ar = img.getAttribute('width') / img.getAttribute('height');
+    const cover = getComputedStyle(img).objectFit === 'cover';
+    const drawn = cover ? Math.max(w, h * ar) : w;
+    img.sizes = `${Math.ceil(drawn)}px`;
+  }
+}
+fitPhotoSizes();
+let sizesTimer;
+addEventListener('resize', () => {
+  clearTimeout(sizesTimer);
+  sizesTimer = setTimeout(fitPhotoSizes, 400);
+});
+
 /* ---------- smooth scroll ---------- */
 scrollTo(0, 0);
 let lenis = null;
