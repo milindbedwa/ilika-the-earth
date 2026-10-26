@@ -1758,6 +1758,17 @@ em {
   justify-items: center;
   overflow: hidden;
 }
+/* north point as on the architect's drawings: a dart pointing to the left, its upper half filled */
+.plan__north {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.plan__north svg {
+  width: 30px;
+  height: 22px;
+  flex: none;
+}
 .plan__drawing img {
   --plan-scale: 1;
   width: calc(min(100%, 440px) * var(--plan-scale));
