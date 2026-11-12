@@ -252,6 +252,24 @@ export function furnish(ctx) {
   const y0 = PLINTH;
   const ceilY = PLINTH + CEIL;
 
+  // recessed ceiling lights, on a loose grid in each room
+  const spots = (b, r4, y, nx, ny) => {
+    for (let i = 0; i < nx; i++)
+      for (let j = 0; j < ny; j++) {
+        const px = r4[0] + ((r4[2] - r4[0]) * (i + 0.5)) / nx;
+        const py = r4[1] + ((r4[3] - r4[1]) * (j + 0.5)) / ny;
+        const p = pc(b, px, py, y, 0);
+        p.cyl(M.brass, 0, -0.012, 0, 0.055, 0.012, 0.055, 16);
+        p.cyl(M.lamp, 0, -0.016, 0, 0.038, 0.006, 0.038, 14);
+      }
+  };
+  spots(B.slab, [368, 145, 423, 268], ceilY, 3, 5);
+  spots(B.slab, [422, 86, 478, 128], ceilY, 3, 2);
+  spots(B.slab, [422, 284, 478, 326], ceilY, 3, 2);
+  spots(B.slab, [370, 108, 408, 128], ceilY, 2, 1);
+  spots(B.slab, [370, 304, 408, 324], ceilY, 2, 1);
+  spots(B.crown, [372, 162, 420, 224], F1 + UP_H, 3, 4);
+
   // ================= hall: living =================
   rug(G, [370.5, 164.7, 420, 194.6], y0);
   sofa(G, 395, 188.6, y0, NY, 2.3);

@@ -1,6 +1,7 @@
 // ILIKA tour: architecture. Walls, floors, pool court, roof terraces, jaali crown, stair, site walls.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import * as P from './plan.js';
 import { makeWater } from './materials.js';
 
@@ -23,6 +24,23 @@ export function uvBox(w, h, d) {
       const k = f * 4 + i;
       uv.setXY(k, uv.getX(k) * s[f][0], uv.getY(k) * s[f][1]);
     }
+  return g;
+}
+
+// rounded box with UVs in metres (each face mapped along its two in-plane axes)
+function softBox(w, h, d, rad, seg) {
+  const g = new RoundedBoxGeometry(w, h, d, seg, rad);
+  const p = g.attributes.position;
+  const n = g.attributes.normal;
+  const uv = g.attributes.uv;
+  for (let i = 0; i < p.count; i++) {
+    const ax = Math.abs(n.getX(i));
+    const ay = Math.abs(n.getY(i));
+    const az = Math.abs(n.getZ(i));
+    if (ax >= ay && ax >= az) uv.setXY(i, p.getZ(i), p.getY(i));
+    else if (ay >= az) uv.setXY(i, p.getX(i), p.getZ(i));
+    else uv.setXY(i, p.getX(i), p.getY(i));
+  }
   return g;
 }
 
@@ -58,6 +76,7 @@ export class Batch {
       m.receiveShadow = receive && !mat.userData.noCast;
       m.matrixAutoUpdate = false;
       if (mat.transparent) m.renderOrder = 2;
+      if (mat.userData.noAO) m.userData.noAO = true;
       parent.add(m);
     }
     this.items.clear();
@@ -75,8 +94,12 @@ export class Piece {
     this.b.add(mat, g);
     return this;
   }
+  // furniture is never knife-edged: upholstery is plump, timber and stone carry a small arris
   box(mat, cx, y0, cz, w, h, d, ry = 0) {
-    const g = uvBox(w, h, d);
+    const m = Math.min(w, h, d);
+    const softR = mat.userData.soft ? Math.min(0.07, m * 0.45) : 0;
+    const rad = softR || (m > 0.02 && !mat.transparent ? Math.min(0.006, m * 0.25) : 0);
+    const g = rad && !(Piece.lite && !softR) ? softBox(w, h, d, rad, softR ? (Piece.lite ? 2 : 3) : 1) : uvBox(w, h, d);
     if (ry) g.rotateY(ry);
     g.translate(cx, y0 + h / 2, cz);
     return this.put(mat, g);
@@ -97,6 +120,7 @@ export class Piece {
 }
 
 export function buildHouse(M, opts = {}) {
+  Piece.lite = !!opts.lite;
   const groups = {
     site: new THREE.Group(),
     ground: new THREE.Group(),
@@ -320,11 +344,27 @@ export function buildHouse(M, opts = {}) {
   ])
     B.ground.pbox(M.coping, r, -0.95, PLINTH);
   B.ground.pbox(M.pool, [pool[0] + cw, pool[1] + cw, pool[2] - cw, pool[3] - cw], -0.95, -0.9);
+  // a band of tile at the waterline
+  for (const r of [
+    [pool[0] + cw, pool[1] + cw, pool[2] - cw, pool[1] + cw + 0.25],
+    [pool[0] + cw, pool[3] - cw - 0.25, pool[2] - cw, pool[3] - cw],
+    [pool[0] + cw, pool[1] + cw + 0.25, pool[0] + cw + 0.25, pool[3] - cw - 0.25],
+    [pool[2] - cw - 0.25, pool[1] + cw + 0.25, pool[2] - cw, pool[3] - cw - 0.25],
+  ])
+    B.ground.pbox(M.pool, r, PLINTH - 0.42, PLINTH - 0.02);
+  // coping stones stand a finger proud of the pool wall
+  for (const r of [
+    [pool[0] - 0.4, pool[1] - 0.4, pool[2] + 0.4, pool[1] + cw + 0.5],
+    [pool[0] - 0.4, pool[3] - cw - 0.5, pool[2] + 0.4, pool[3] + 0.4],
+    [pool[0] - 0.4, pool[1] + cw + 0.5, pool[0] + cw + 0.5, pool[3] - cw - 0.5],
+    [pool[2] - cw - 0.5, pool[1] + cw + 0.5, pool[2] + 0.4, pool[3] - cw - 0.5],
+  ])
+    B.ground.pbox(M.deck, r, PLINTH, PLINTH + 0.025);
   psolid(0, [pool[0] + 0.6, pool[1] + 0.6, pool[2], pool[3] - 0.6]);
   const pr = P.rect(pool[0] + cw, pool[1] + cw, pool[2] - cw, pool[3] - cw);
   const water = makeWater(pr.maxX - pr.minX, pr.maxZ - pr.minZ);
   water.position.set((pr.minX + pr.maxX) / 2, PLINTH - 0.1, (pr.minZ + pr.maxZ) / 2);
-  water.rotation.z = 0;
+  water.userData.noAO = true;
   groups.ground.add(water);
   // garden-side steps up to the pool edge, as in the pool render
   for (let i = 0; i < 3; i++) {
@@ -397,6 +437,7 @@ export function buildHouse(M, opts = {}) {
     for (let i = 0; i < v.length; i += 2) {
       const r = ax === 'x' ? [c - pt / 2, v[i], c + pt / 2, v[i + 1]] : [v[i], c - pt / 2, v[i + 1], c + pt / 2];
       B.slab.pbox(M.terra, r, c0, F1 + PARAPET);
+      B.slab.pbox(M.deep, [r[0] - 0.35, r[1] - 0.35, r[2] + 0.35, r[3] + 0.35], F1 + PARAPET, F1 + PARAPET + 0.045);
       psolid(1, r);
     }
   // slab edge under the multi room walls

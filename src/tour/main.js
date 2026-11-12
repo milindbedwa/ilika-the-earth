@@ -7,12 +7,17 @@ import { plantGarden } from './garden.js';
 import { furnish } from './furnish.js';
 import { Nav } from './nav.js';
 import { Ambience } from './audio.js';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { GTAOPass } from 'three/examples/jsm/postprocessing/GTAOPass.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const coarse = matchMedia('(hover: none) and (pointer: coarse)').matches;
 const lockDpr = new URLSearchParams(location.search).has('lock'); // fixed resolution, for screenshots
+const plain = new URLSearchParams(location.search).has('plain'); // no post-processing, for quick checks
 const lite = coarse || (navigator.hardwareConcurrency || 8) <= 4;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const tick = () => new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));
@@ -48,12 +53,14 @@ async function boot() {
 
   // ---------- renderer ----------
   const canvas = $('#scene');
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: !lite, powerPreference: 'high-performance' });
-  const maxDpr = Math.min(window.devicePixelRatio || 1, lite ? 1.5 : 2);
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
+  // phones are held close: never render below 1.5 device pixels per point there
+  const maxDpr = Math.min(window.devicePixelRatio || 1, 2);
+  const minDpr = Math.min(maxDpr, coarse ? 1.5 : 1);
   let dpr = maxDpr;
   renderer.setPixelRatio(dpr);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.toneMapping = THREE.NeutralToneMapping;
+  renderer.toneMapping = THREE.AgXToneMapping;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFShadowMap;
   renderer.shadowMap.autoUpdate = false; // nothing that casts a shadow moves
@@ -81,12 +88,12 @@ async function boot() {
   scene.add(sky);
   const sun = new THREE.DirectionalLight('#ffd2a0', 3);
   sun.castShadow = true;
-  const sm = Math.min(lite ? 2048 : 4096, renderer.capabilities.maxTextureSize);
+  const sm = Math.min(4096, renderer.capabilities.maxTextureSize);
   sun.shadow.mapSize.set(sm, sm);
-  Object.assign(sun.shadow.camera, { left: -29, right: 29, top: 29, bottom: -29, near: 1, far: 160 });
-  sun.shadow.bias = -0.0004;
-  sun.shadow.normalBias = 0.035;
-  sun.shadow.radius = 2.5;
+  Object.assign(sun.shadow.camera, { left: -24, right: 24, top: 21, bottom: -19, near: 1, far: 170 });
+  sun.shadow.bias = -0.0002;
+  sun.shadow.normalBias = 0.02;
+  sun.shadow.radius = 3;
   scene.add(sun, sun.target);
   const hemi = new THREE.HemisphereLight('#cfe0f0', '#a07a5c', 0.5);
   scene.add(hemi);
@@ -109,8 +116,8 @@ async function boot() {
     day: {
       dir: [-0.8, 0.44, 0.5],
       sun: '#ffe1c2',
-      sunI: 2.5,
-      hemi: ['#d6e2ee', '#b08c70', 0.5],
+      sunI: 8,
+      hemi: ['#d6e2ee', '#b08c70', 0.25],
       top: '#4f86c4',
       mid: '#a9c9e2',
       low: '#f6dcbb',
@@ -119,15 +126,15 @@ async function boot() {
       envLow: '#e6c9a6',
       glow: '#ffb56e',
       fog: '#ecd6bb',
-      env: 0.9,
+      env: 0.62,
       exp: 1.0,
       water: ['#9ec3da', '#2f8f93', '#86d6cc'],
     },
     dusk: {
       dir: [-0.9, 0.13, 0.36],
       sun: '#ff8f55',
-      sunI: 1.1,
-      hemi: ['#7f8fb6', '#6a4a38', 0.55],
+      sunI: 2.6,
+      hemi: ['#7f8fb6', '#6a4a38', 0.3],
       top: '#243560',
       mid: '#8d7190',
       low: '#f3a070',
@@ -136,12 +143,14 @@ async function boot() {
       envLow: '#c98a68',
       glow: '#ff8a4a',
       fog: '#a47f86',
-      env: 0.75,
-      exp: 1.1,
+      env: 0.7,
+      exp: 1.35,
       water: ['#8a86a8', '#1f5f6e', '#4f9aa0'],
     },
   };
   let dusk = false;
+  let baseExp = 1;
+  let mode = 'intro';
   function setLight(isDusk) {
     dusk = isDusk;
     const L = isDusk ? LIGHT.dusk : LIGHT.day;
@@ -163,7 +172,8 @@ async function boot() {
     u.uSunCol.value.set(L.glow);
     u.uSun.value.copy(d);
     scene.fog.color.set(L.fog);
-    renderer.toneMappingExposure = L.exp;
+    baseExp = L.exp;
+    if (!renderer.toneMappingExposure || mode === 'intro') renderer.toneMappingExposure = L.exp * 1.15;
     const w = ctx.water.material.uniforms;
     w.uSun.value.copy(d);
     w.uSky.value.set(L.water[0]);
@@ -173,7 +183,7 @@ async function boot() {
     M.setDusk(isDusk ? 1 : 0);
     for (const pl of lampLights) {
       pl.visible = isDusk;
-      pl.intensity = isDusk ? 5 * pl.userData.power : 0;
+      pl.intensity = isDusk ? 7 * pl.userData.power : 0;
     }
     const eu = envSky.material.uniforms;
     eu.uTop.value.set(L.envTop);
@@ -189,6 +199,31 @@ async function boot() {
   }
   setLight(false);
 
+  // ---------- post-processing: anti-aliasing, ambient occlusion in corners and under furniture ----------
+  const target = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType, samples: 4 });
+  const composer = new EffectComposer(renderer, target);
+  composer.addPass(new RenderPass(scene, camera));
+  const ao = new GTAOPass(scene, camera, 4, 4);
+  ao.updateGtaoMaterial({ radius: 0.7, distanceExponent: 1.4, thickness: 1.2, scale: 1.15, samples: lite ? 8 : 16, distanceFallOff: 1 });
+  ao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: lite ? 8 : 16 });
+  ao.blendIntensity = 0.9;
+  // glass, water, sheers and leaf cards must not write occlusion
+  const aoHide = ao._overrideVisibility.bind(ao);
+  ao._overrideVisibility = function () {
+    aoHide();
+    const cache = this._visibilityCache;
+    scene.traverse((o) => {
+      if (o.visible && o.userData.noAO) {
+        o.visible = false;
+        cache.push(o);
+      }
+    });
+  };
+  sky.userData.noAO = true;
+  composer.addPass(ao);
+  composer.addPass(new OutputPass());
+  let aoOn = true;
+
   // ---------- visitor ----------
   const me = { x: 0, z: 0, lv: 0, yaw: 0, pitch: 0, y: P.EYE };
   const place = (lv, x, z, lookX, lookZ, pitch = -0.03) => {
@@ -203,7 +238,6 @@ async function boot() {
   };
   const planPt = (s) => (s.world ? { p: s.p, l: s.l } : { p: P.W(...s.p), l: P.W(...s.l) });
   let walk = null; // { pts, i, speed, done, face }
-  let mode = 'intro';
   const keys = new Set();
   const pad = { x: 0, y: 0 };
   const orbit = { az: -0.62, pol: 0.92, rad: 46, auto: !reduce };
@@ -656,6 +690,8 @@ async function boot() {
     const w = (sizeW = canvas.clientWidth || innerWidth);
     const h = (sizeH = canvas.clientHeight || innerHeight);
     renderer.setSize(w, h, false);
+    composer.setPixelRatio(dpr);
+    composer.setSize(w, h);
     camera.aspect = w / h;
     camera.fov = w < h ? 74 : 58;
     camera.updateProjectionMatrix();
@@ -672,6 +708,17 @@ async function boot() {
   let time = 0;
   function update(dt) {
     time += dt;
+    // the eye adapts: rooms are exposed brighter than the garden, as a camera or a person would
+    const [ex, ey] = P.toPlan(me.x, me.z);
+    const inside =
+      mode !== 'overview' &&
+      mode !== 'intro' &&
+      ex > 362 &&
+      (me.lv
+        ? ex < 429 && ey > 152.5 && ey < 255
+        : (ex < 429 && ey > 78.5 && ey < 331) || (ex < 484.5 && (ey < 134.4 || ey > 276) && ey > 78.5 && ey < 331));
+    const expT = baseExp * (inside ? 1.75 : 1.15);
+    renderer.toneMappingExposure += (expT - renderer.toneMappingExposure) * Math.min(1, dt * 1.6);
     if (!reduce) {
       ctx.water.material.uniforms.uTime.value = time;
       M.wind.value = time;
@@ -786,28 +833,60 @@ async function boot() {
     last = now;
     if (canvas.clientWidth !== sizeW || canvas.clientHeight !== sizeH) resize(); // catches rotation and browser bars
     update(Math.min(0.05, raw));
-    renderer.render(scene, camera);
+    ao.enabled = aoOn;
+    if (plain) renderer.render(scene, camera);
+    else composer.render();
+    window.__tour.frames++;
     // adaptive resolution: drop when frames run long, climb back slowly
-    if (raw > 0.034) {
+    if (lockDpr) return;
+    // Quality governor. 30 fps is a normal ceiling (phones in Low Power Mode), so only frames
+    // slower than about 22 fps count as slow. Ambient occlusion goes first, resolution second.
+    if (raw > 0.045) {
       slow += raw;
       fast = 0;
-    } else if (raw < 0.02) {
+    } else {
       fast += raw;
-      slow = Math.max(0, slow - raw);
+      slow = Math.max(0, slow - raw * 0.5);
     }
-    if (lockDpr) return;
-    if (slow > 1.2 && dpr > 0.7) {
-      dpr = Math.max(0.7, dpr * 0.82);
-      renderer.setPixelRatio(dpr);
-      resize();
+    if (time < 4) slow = 0; // ignore the stutter of first-time shader compilation
+    if (slow > 2) {
       slow = 0;
-    } else if (fast > 6 && dpr < maxDpr) {
-      dpr = Math.min(maxDpr, dpr * 1.12);
+      if (aoOn) aoOn = false;
+      else if (dpr > minDpr) {
+        dpr = Math.max(minDpr, dpr * 0.85);
+        renderer.setPixelRatio(dpr);
+        resize();
+      }
+    } else if (fast > 12 && dpr < maxDpr) {
+      dpr = Math.min(maxDpr, dpr * 1.1);
       renderer.setPixelRatio(dpr);
       resize();
       fast = 0;
     }
   }
+
+  // handle for automated checks
+  window.__tour = {
+    frames: 0,
+    composer,
+    ao,
+    sun,
+    P,
+    nav,
+    me,
+    ctx,
+    place,
+    goRoom,
+    goFloor,
+    setMode,
+    setLight,
+    setCut,
+    orbit,
+    tour,
+    renderer,
+    scene,
+    camera,
+  };
 
   place(P.START.lv, P.START.p[0], P.START.p[1], P.START.l[0], P.START.l[1], 0.02);
   renderer.compile(scene, camera);
@@ -819,7 +898,4 @@ async function boot() {
   $('#intro').hidden = false;
   document.body.classList.remove('is-loading');
   canvas.addEventListener('webglcontextlost', (e) => e.preventDefault());
-
-  // handle for automated checks
-  window.__tour = { P, nav, me, ctx, place, goRoom, goFloor, setMode, setLight, setCut, orbit, tour, renderer, scene, camera };
 }

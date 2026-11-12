@@ -1,168 +1,209 @@
 // ILIKA tour: planting. A handful of plant shapes, repeated as instances.
 import * as THREE from 'three';
 import * as P from './plan.js';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { rng } from './materials.js';
 
 const { X, Z, PLINTH, CEIL, F1, PARAPET, UP_H } = P;
 
-// ---- geometry helpers: non-indexed triangles with vertex colours ----
-class Tri {
+// ---- geometry helpers: quads and strips with normals and UVs, for alpha-cut leaf textures ----
+class Leaves {
   constructor() {
     this.p = [];
-    this.c = [];
+    this.n = [];
+    this.u = [];
   }
-  tri(a, b, c, ca, cb = ca, cc = ca) {
-    this.p.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z);
-    this.c.push(ca.r, ca.g, ca.b, cb.r, cb.g, cb.b, cc.r, cc.g, cc.b);
+  // quad a-b-c-d (counter-clockwise), uv corners matching
+  quad(a, b, c, d, uv, nrm) {
+    const order = [a, b, c, a, c, d];
+    const uo = [uv[0], uv[1], uv[2], uv[0], uv[2], uv[3]];
+    const face = nrm ? null : new THREE.Vector3().subVectors(b, a).cross(new THREE.Vector3().subVectors(d, a)).normalize();
+    for (let i = 0; i < 6; i++) {
+      const v = order[i];
+      this.p.push(v.x, v.y, v.z);
+      // leaves are lit from above whichever way the card faces: lean every normal upward
+      const n = nrm ? nrm(v) : face.clone().multiplyScalar(face.y < 0 ? -1 : 1);
+      n.y += 0.55;
+      n.normalize();
+      this.n.push(n.x, n.y, n.z);
+      this.u.push(uo[i][0], uo[i][1]);
+    }
   }
   build() {
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(this.p, 3));
-    g.setAttribute('color', new THREE.Float32BufferAttribute(this.c, 3));
-    g.computeVertexNormals();
+    g.setAttribute('normal', new THREE.Float32BufferAttribute(this.n, 3));
+    g.setAttribute('uv', new THREE.Float32BufferAttribute(this.u, 2));
     return g;
   }
 }
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
-const col = (h) => new THREE.Color(h);
 
-// a rosette of arching blades: agave, bromeliad, fern or banana depending on the numbers
-function rosette(r, { n, len, wid, lean0, lean1, base, tip, seg = 4, jitter = 0.25 }) {
-  const t = new Tri();
-  const cb = col(base);
-  const ct = col(tip);
-  for (let i = 0; i < n; i++) {
-    const az = (i / n) * Math.PI * 2 + r() * 0.5;
-    const L = len * (0.7 + r() * 0.5);
-    const l0 = lean0 + (r() - 0.5) * jitter;
-    const l1 = lean1 + (r() - 0.5) * jitter;
-    const dir = V(Math.cos(az), 0, Math.sin(az));
-    const side = V(-Math.sin(az), 0, Math.cos(az));
-    let prev = null;
-    let pos = V(0, 0, 0);
-    for (let s = 0; s <= seg; s++) {
-      const k = s / seg;
-      const w = wid * (1 - Math.pow(k, 1.6)) * (0.35 + 0.65 * Math.sin(Math.min(1, k * 3 + 0.25) * Math.PI * 0.5));
-      const a = pos.clone().addScaledVector(side, w / 2);
-      const b = pos.clone().addScaledVector(side, -w / 2);
-      const c = cb.clone().lerp(ct, k * (0.6 + r() * 0.4));
-      if (prev) {
-        t.tri(prev.a, prev.b, a, prev.c, prev.c, c);
-        t.tri(prev.b, b, a, prev.c, c, c);
-      }
-      prev = { a, b, c };
-      const lean = l0 + (l1 - l0) * k;
-      pos = pos
-        .clone()
-        .addScaledVector(dir, (Math.sin(lean) * L) / seg)
-        .add(V(0, (Math.cos(lean) * L) / seg, 0));
+// an arching leaf: a strip along a curve, folded along its rib. The texture runs base (u=0) to tip (u=1).
+function strip(L, r, { az, len, wid, lean0, lean1, seg = 5, fold = 0.35, base = V(0, 0, 0), u0 = 0 }) {
+  const dir = V(Math.cos(az), 0, Math.sin(az));
+  const side = V(-Math.sin(az), 0, Math.cos(az));
+  let pos = base.clone();
+  let prev = null;
+  for (let s = 0; s <= seg; s++) {
+    const k = s / seg;
+    const lean = lean0 + (lean1 - lean0) * k;
+    const tan = V(dir.x * Math.sin(lean), Math.cos(lean), dir.z * Math.sin(lean));
+    const up = V().crossVectors(side, tan).normalize(); // leaf's own "up"
+    const drop = up.clone().multiplyScalar(-Math.sin(fold) * wid * 0.5);
+    const out = side.clone().multiplyScalar(Math.cos(fold) * wid * 0.5);
+    const cur = { c: pos.clone(), l: pos.clone().add(out).add(drop), r: pos.clone().sub(out).add(drop), u: u0 + (1 - u0) * k };
+    if (prev) {
+      L.quad(prev.c, prev.l, cur.l, cur.c, [
+        [prev.u, 0.5],
+        [prev.u, 1],
+        [cur.u, 1],
+        [cur.u, 0.5],
+      ]);
+      L.quad(prev.r, prev.c, cur.c, cur.r, [
+        [prev.u, 0],
+        [prev.u, 0.5],
+        [cur.u, 0.5],
+        [cur.u, 0],
+      ]);
     }
+    prev = cur;
+    pos = pos.clone().addScaledVector(tan, len / seg);
   }
-  return t.build();
+}
+
+function rosette(r, { n, len, wid, lean0, lean1, seg = 4, fold = 0.35, jitter = 0.25, rings = 1 }) {
+  const L = new Leaves();
+  for (let ring = 0; ring < rings; ring++)
+    for (let i = 0; i < n; i++) {
+      const k = 1 - ring * 0.3;
+      strip(L, r, {
+        az: (i / n) * Math.PI * 2 + r() * 0.6 + ring,
+        len: len * k * (0.75 + r() * 0.45),
+        wid: wid * (0.8 + r() * 0.4),
+        lean0: (lean0 + (r() - 0.5) * jitter) * k,
+        lean1: (lean1 + (r() - 0.5) * jitter) * k,
+        seg,
+        fold,
+      });
+    }
+  return L.build();
 }
 
 function palmCrown(r) {
-  const t = new Tri();
-  const fronds = 11;
+  const L = new Leaves();
+  const fronds = 15;
   for (let f = 0; f < fronds; f++) {
-    const az = (f / fronds) * Math.PI * 2 + r() * 0.4;
-    const dir = V(Math.cos(az), 0, Math.sin(az));
-    const side = V(-Math.sin(az), 0, Math.cos(az));
-    const L = 3.0 + r() * 1.0;
-    const l0 = 0.25 + r() * 0.5;
-    const l1 = 1.7 + r() * 0.6;
-    const n = 13;
-    let pos = V(0, 0, 0);
-    const c = col('#4f6b2c').lerp(col('#7c8f3e'), r());
-    for (let s = 0; s < n; s++) {
-      const k = s / n;
-      const lean = l0 + (l1 - l0) * k;
-      const tan = V(dir.x * Math.sin(lean), Math.cos(lean), dir.z * Math.sin(lean));
-      const ll = 0.95 * Math.sin(Math.PI * Math.min(1, k * 1.15 + 0.12)) + 0.15;
-      for (const sgn of [-1, 1]) {
-        const tipP = pos
-          .clone()
-          .addScaledVector(side, sgn * ll)
-          .addScaledVector(tan, 0.3)
-          .add(V(0, -0.38 * ll, 0));
-        const cc = c.clone().multiplyScalar(0.8 + r() * 0.35);
-        t.tri(pos.clone().addScaledVector(tan, -0.1), pos.clone().addScaledVector(tan, 0.12), tipP, cc);
-      }
-      pos = pos.clone().addScaledVector(tan, L / n);
-    }
+    const young = f % 3 === 0; // a few upright fronds in the middle
+    strip(L, r, {
+      az: (f / fronds) * Math.PI * 2 + r() * 0.4,
+      len: 3.1 + r() * 0.9,
+      wid: 1.25,
+      lean0: young ? 0.1 + r() * 0.2 : 0.5 + r() * 0.4,
+      lean1: young ? 1.2 + r() * 0.3 : 1.9 + r() * 0.5,
+      seg: 7,
+      fold: 0.5,
+    });
   }
-  return t.build();
+  return L.build();
 }
 
-// lumpy canopy: a few squashed, jittered icospheres
-function canopy(r, blobs, spread, size, y0, dark, light) {
-  const t = new Tri();
-  const cd = col(dark);
-  const cl = col(light);
-  for (let b = 0; b < blobs; b++) {
-    const g = new THREE.IcosahedronGeometry(1, 1);
-    const p = g.attributes.position;
-    const rad = size * (0.6 + r() * 0.6);
-    const off = V((r() - 0.5) * spread, y0 + r() * spread * 0.45, (r() - 0.5) * spread);
-    const tone = 0.8 + r() * 0.35;
-    const vs = [];
-    for (let i = 0; i < p.count; i++) {
-      const v = V(p.getX(i), p.getY(i), p.getZ(i));
-      const h = Math.sin(v.x * 12.9 + v.y * 78.2 + v.z * 37.7) * 43758.5;
-      const j = 0.82 + (h - Math.floor(h)) * 0.36;
-      vs.push(
-        v
-          .multiplyScalar(rad * j)
-          .multiply(V(1, 0.72, 1))
-          .add(off),
+// a leafy mass: cards scattered through a few clumps, shaded as one rounded volume
+function canopy(r, { clumps, spread, rad, y0, card, per }) {
+  const L = new Leaves();
+  const centre = V(0, y0 + spread * 0.25, 0);
+  for (let c = 0; c < clumps; c++) {
+    const cc = V((r() - 0.5) * spread, y0 + r() * spread * 0.5, (r() - 0.5) * spread);
+    const cr = rad * (0.7 + r() * 0.5);
+    for (let i = 0; i < per; i++) {
+      // a point on the clump's shell, where leaves actually are
+      const a = r() * Math.PI * 2;
+      const e = Math.acos(1 - r() * 1.6) - 0.3;
+      const d = cr * (0.75 + r() * 0.3);
+      const o = V(Math.sin(e) * Math.cos(a) * d, Math.cos(e) * d * 0.75, Math.sin(e) * Math.sin(a) * d).add(cc);
+      const s = card * (0.7 + r() * 0.6) * 0.5;
+      const ax = V(r() - 0.5, (r() - 0.5) * 0.6, r() - 0.5).normalize();
+      const ay = V(r() - 0.5, r() * 0.9 + 0.2, r() - 0.5)
+        .cross(ax)
+        .cross(ax)
+        .normalize()
+        .multiplyScalar(-1);
+      const p = (sx, sy) =>
+        o
+          .clone()
+          .addScaledVector(ax, sx * s)
+          .addScaledVector(ay, sy * s);
+      const nrm = (v) => v.clone().sub(centre).normalize();
+      L.quad(
+        p(-1, -1),
+        p(1, -1),
+        p(1, 1),
+        p(-1, 1),
+        [
+          [0, 0],
+          [1, 0],
+          [1, 1],
+          [0, 1],
+        ],
+        nrm,
       );
     }
-    for (let i = 0; i < vs.length; i += 3) {
-      const k = THREE.MathUtils.clamp((vs[i].y - off.y) / rad / 0.72 / 2 + 0.5, 0, 1);
-      t.tri(vs[i], vs[i + 1], vs[i + 2], cd.clone().lerp(cl, k).multiplyScalar(tone));
-    }
-    g.dispose();
   }
-  return t.build();
+  return L.build();
 }
 
-function creeper(r) {
-  const t = new Tri();
-  for (let s = 0; s < 3; s++) {
-    let x = (r() - 0.5) * 0.3;
-    let z = (r() - 0.5) * 0.12;
-    const len = 0.3 + r() * 0.5;
-    const stem = col('#3d5a24');
-    t.tri(V(x - 0.004, 0, z), V(x + 0.004, 0, z), V(x, -len, z), stem);
-    for (let y = 0; y > -len; y -= 0.045) {
-      const a = r() * Math.PI * 2;
-      const sz = 0.035 + r() * 0.035;
-      const c = col('#476628').lerp(col('#86a04a'), r());
-      const o = V(x + (r() - 0.5) * 0.02, y, z);
-      const u = V(Math.cos(a) * sz, -sz * 0.6, Math.sin(a) * sz);
-      const w = V(-Math.sin(a) * sz * 0.6, -sz * 0.2, Math.cos(a) * sz * 0.6);
-      t.tri(o, o.clone().add(u).add(w), o.clone().add(u).sub(w), c);
-    }
+// two crossed hanging cards
+function creeper() {
+  const L = new Leaves();
+  for (const a of [0, 1.3]) {
+    const ax = V(Math.cos(a) * 0.28, 0, Math.sin(a) * 0.28);
+    L.quad(V(0, -0.6, 0).sub(ax), V(0, -0.6, 0).add(ax), V(0, 0, 0).add(ax), V(0, 0, 0).sub(ax), [
+      [0, 0],
+      [1, 0],
+      [1, 1],
+      [0, 1],
+    ]);
   }
-  return t.build();
+  return L.build();
 }
 
-function trunkGeo(h, r0, r1, bend) {
-  const g = new THREE.CylinderGeometry(r1, r0, h, 7, 6);
+// trunk with a slight sweep, and optional boughs
+function trunkGeo(h, r0, r1, bend, boughs = 0, r = null) {
+  const parts = [];
+  const g = new THREE.CylinderGeometry(r1, r0, h, 10, 8);
   const p = g.attributes.position;
   for (let i = 0; i < p.count; i++) {
     const k = p.getY(i) / h + 0.5;
     p.setX(i, p.getX(i) + bend * k * k);
+    // flare at the foot
+    if (k < 0.12) {
+      const f = 1 + (0.12 - k) * 3;
+      p.setX(i, p.getX(i) * f);
+      p.setZ(i, p.getZ(i) * f);
+    }
   }
   g.translate(0, h / 2, 0);
-  g.computeVertexNormals();
-  return g;
+  parts.push(g);
+  for (let b = 0; b < boughs; b++) {
+    const len = h * (0.35 + r() * 0.2);
+    const bg = new THREE.CylinderGeometry(r1 * 0.35, r1 * 0.8, len, 7, 1);
+    bg.translate(0, len / 2, 0);
+    bg.rotateZ(0.5 + r() * 0.5);
+    bg.rotateY((b / boughs) * Math.PI * 2 + r());
+    bg.translate(0, h * (0.72 + r() * 0.2), 0);
+    parts.push(bg);
+  }
+  const m = parts.length > 1 ? mergeGeometries(parts) : g;
+  const uv = m.attributes.uv;
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getY(i) * h * 0.5, uv.getX(i) * r0 * 6);
+  m.computeVertexNormals();
+  return m;
 }
 
 // urn profile for LatheGeometry
 export function potGeo(h, rad, neck = 0.62) {
   const pts = [];
-  const n = 12;
+  const n = 22;
   for (let i = 0; i <= n; i++) {
     const k = i / n;
     const r =
@@ -171,28 +212,28 @@ export function potGeo(h, rad, neck = 0.62) {
       (k > 0.8 ? neck + (1 - neck) * (1 - (k - 0.8) / 0.2) + (k > 0.94 ? 0.12 : 0) : 1);
     pts.push(new THREE.Vector2(Math.max(0.02, r), k * h));
   }
-  const g = new THREE.LatheGeometry(pts, 18);
+  const g = new THREE.LatheGeometry(pts, 32);
   const uv = g.attributes.uv;
   for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * rad * 5, uv.getY(i) * h);
   return g;
 }
 
 export function plantGarden(ctx) {
-  const { M, groups, solid } = ctx;
+  const { M, groups, solid, B } = ctx;
   const r = rng(7);
   const lite = ctx.opts.lite;
   const kinds = {
-    agave: { g: rosette(r, { n: 16, len: 0.75, wid: 0.13, lean0: 0.25, lean1: 1.35, base: '#4c6a2a', tip: '#c3c25a' }), m: M.leaf },
-    fern: { g: rosette(r, { n: 13, len: 1.15, wid: 0.2, lean0: 0.15, lean1: 1.9, base: '#3f5f27', tip: '#7f9c45', seg: 5 }), m: M.leaf },
-    banana: { g: rosette(r, { n: 7, len: 2.0, wid: 0.5, lean0: 0.1, lean1: 1.2, base: '#456a2a', tip: '#8fae4e', seg: 5 }), m: M.leaf },
-    spike: { g: rosette(r, { n: 22, len: 0.9, wid: 0.06, lean0: 0.05, lean1: 0.7, base: '#3f5a26', tip: '#8b9a4c', seg: 3 }), m: M.leaf },
-    creeper: { g: creeper(r), m: M.leaf },
-    palm: { g: palmCrown(r), m: M.leaf },
-    palmTrunk: { g: trunkGeo(1, 0.16, 0.11, 0.08), m: M.bark, noSway: true },
-    treeA: { g: canopy(r, 7, 3.2, 1.9, 3.7, '#3a5524', '#7c9443'), m: M.canopy },
-    treeB: { g: canopy(r, 6, 2.6, 1.6, 3.3, '#44602a', '#93a24e'), m: M.canopy },
-    treeTrunk: { g: trunkGeo(3.9, 0.22, 0.14, 0), m: M.bark },
-    bush: { g: canopy(r, 4, 0.9, 0.5, 0.35, '#3d5a26', '#7f9844'), m: M.canopy },
+    agave: { g: rosette(r, { n: 12, len: 0.8, wid: 0.16, lean0: 0.2, lean1: 1.3, rings: 2 }), m: M.blade },
+    fern: { g: rosette(r, { n: 11, len: 1.15, wid: 0.34, lean0: 0.2, lean1: 1.95, seg: 6, fold: 0.2 }), m: M.frond },
+    banana: { g: rosette(r, { n: 7, len: 1.9, wid: 0.62, lean0: 0.08, lean1: 1.25, seg: 6, fold: 0.25 }), m: M.broad },
+    spike: { g: rosette(r, { n: 20, len: 0.95, wid: 0.07, lean0: 0.05, lean1: 0.75, seg: 3, rings: 2 }), m: M.blade },
+    creeper: { g: creeper(), m: M.vine },
+    palm: { g: palmCrown(r), m: M.frond },
+    palmTrunk: { g: trunkGeo(1, 0.17, 0.11, 0.08), m: M.bark },
+    treeA: { g: canopy(r, { clumps: 7, spread: 3.4, rad: 1.5, y0: 3.6, card: 1.75, per: lite ? 14 : 26 }), m: M.leafSpray },
+    treeB: { g: canopy(r, { clumps: 5, spread: 2.8, rad: 1.35, y0: 3.3, card: 1.65, per: lite ? 14 : 26 }), m: M.leafSpray },
+    treeTrunk: { g: trunkGeo(3.9, 0.2, 0.13, 0.1, 4, r), m: M.bark },
+    bush: { g: canopy(r, { clumps: 4, spread: 0.8, rad: 0.42, y0: 0.3, card: 0.5, per: lite ? 10 : 16 }), m: M.leafSpray },
   };
   const lists = new Map();
   const dummy = new THREE.Object3D();
@@ -215,6 +256,10 @@ export function plantGarden(ctx) {
   const tree = (x, z, s) => {
     const rot = r() * 6.28;
     add('treeTrunk', 'site', x, 0, z, s, s, rot);
+    const sh = new THREE.PlaneGeometry(7 * s, 7 * s);
+    sh.rotateX(-Math.PI / 2);
+    sh.translate(x, 0.02, z);
+    B.site.add(M.shadow, sh);
     add(r() > 0.5 ? 'treeA' : 'treeB', 'site', x, 0, z, s, s * (0.9 + r() * 0.2), rot);
   };
   // a planted strip: mixed low plants along a line
@@ -260,7 +305,7 @@ export function plantGarden(ctx) {
     const a = (i / (lite ? 36 : 64)) * 6.283 + r() * 0.1;
     const d = 44 + r() * 34;
     if (i % 4 === 0) palm(Math.cos(a) * d, Math.sin(a) * d, 7 + r() * 4);
-    else tree(Math.cos(a) * d, Math.sin(a) * d, 1.5 + r() * 0.9);
+    else tree(Math.cos(a) * d, Math.sin(a) * d, 1.25 + r() * 0.5);
   }
   // palms inside the plot, at the corners of the lawn
   for (const [x, z] of [
@@ -356,10 +401,18 @@ export function plantGarden(ctx) {
       const [kind, group] = key.split('|');
       const k = kinds[kind];
       const mesh = new THREE.InstancedMesh(k.g, k.m, mats.length);
-      mats.forEach((mm, i) => mesh.setMatrixAt(i, mm));
-      mesh.castShadow = kind !== 'creeper';
+      const tint = new THREE.Color();
+      const leafy = !!k.m.userData.depth;
+      mats.forEach((mm, i) => {
+        mesh.setMatrixAt(i, mm);
+        // no two plants quite the same green
+        if (leafy) mesh.setColorAt(i, tint.setRGB(0.86 + r() * 0.3, 0.9 + r() * 0.2, 0.8 + r() * 0.3));
+      });
+      if (leafy) mesh.customDepthMaterial = k.m.userData.depth;
+      mesh.castShadow = true;
       mesh.receiveShadow = true;
       mesh.frustumCulled = false;
+      if (k.m.userData.noAO) mesh.userData.noAO = true;
       groups[group].add(mesh);
     }
   };
