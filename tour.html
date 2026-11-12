@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <title>Take a tour | ILIKA · The Earth</title>
+    <meta
+      name="description"
+      content="Walk through an ILIKA farmhouse in 3D: the hall, both bedroom suites, the pool court, the garden pavilion and the terraces, modelled from the plans."
+    />
+    <meta name="theme-color" content="#3b2418" />
+    <meta property="og:title" content="Take a tour | ILIKA · The Earth" />
+    <meta property="og:description" content="Walk through an ILIKA farmhouse in 3D, modelled from the plans." />
+    <meta property="og:image" content="/og.jpg" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=Hanken+Grotesk:wght@300..600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/src/tour/tour.css" />
+  </head>
+  <body class="t is-loading">
+    <canvas class="t-canvas" id="scene" aria-label="3D model of an ILIKA farmhouse" tabindex="0"></canvas>
+    <div class="t-fade" id="fade" aria-hidden="true"></div>
+
+    <!-- loading -->
+    <div class="t-load" id="load" role="status" aria-live="polite">
+      <p class="t-brand">ilika</p>
+      <div class="t-load__bar"><span id="load-bar"></span></div>
+      <p class="t-label" id="load-text">Laying the plinth</p>
+    </div>
+
+    <!-- no WebGL -->
+    <div class="t-fallback" id="fallback" hidden>
+      <img data-pic="farmhouse-front" alt="An ILIKA farmhouse seen from the lawn, with the pool in front" sizes="100vw" />
+      <div class="t-fallback__box">
+        <p class="t-brand">ilika</p>
+        <h1>The 3D tour needs WebGL</h1>
+        <p>
+          This browser or device could not start the 3D view. Try a recent version of Chrome, Safari, Edge or Firefox, or see the plans and
+          photographs on the main site.
+        </p>
+        <a class="t-btn t-btn--solid" href="/#plan">See the plans</a>
+      </div>
+    </div>
+
+    <!-- arrival -->
+    <section class="t-intro" id="intro" hidden>
+      <a class="t-back" href="/" aria-label="Back to the ILIKA site">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 6l-6 6 6 6" /></svg>Back to site
+      </a>
+      <div class="t-intro__copy">
+        <p class="t-label">A walk through the farmhouse</p>
+        <h1 class="t-intro__title">ILIKA</h1>
+        <p class="t-intro__line">An earthy way of living.</p>
+        <button class="t-btn t-btn--solid" type="button" id="enter">Enter the experience</button>
+      </div>
+    </section>
+
+    <!-- heads-up display -->
+    <div class="t-hud" id="hud" hidden>
+      <header class="t-top">
+        <a class="t-home" href="/" aria-label="ilika, back to the site">ilika</a>
+        <p class="t-room" id="room" aria-live="polite"></p>
+        <div class="t-tools">
+          <button type="button" class="t-icon" id="btn-sound" aria-pressed="false" aria-label="Sound" title="Sound">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 10v4h3l5 4V6L7 10H4z" />
+              <path class="on" d="M15.5 9a4 4 0 010 6M18 6.5a7.5 7.5 0 010 11" />
+              <path class="off" d="M16 10l5 5m0-5l-5 5" />
+            </svg>
+          </button>
+          <button type="button" class="t-icon" id="btn-light" aria-pressed="false" aria-label="Dusk lighting" title="Dusk lighting">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                class="off"
+                d="M12 7a5 5 0 100 10 5 5 0 000-10zM12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"
+              />
+              <path class="on" d="M19 14.5A7.5 7.5 0 119.5 5a6 6 0 009.5 9.5z" />
+            </svg>
+          </button>
+          <button type="button" class="t-icon" id="btn-reset" aria-label="Reset view" title="Reset view">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 108-8H7m0 0l3-3M7 4l3 3" /></svg>
+          </button>
+          <button type="button" class="t-icon" id="btn-info" aria-label="About this model" title="About this model">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 11v6m0-9.5v.5M12 3a9 9 0 100 18 9 9 0 000-18z" /></svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- minimap -->
+      <aside class="t-mini" id="mini">
+        <button type="button" class="t-mini__toggle" id="mini-toggle" aria-expanded="true" aria-controls="mini-body">
+          <span id="mini-floor">Ground</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5" /></svg>
+        </button>
+        <div class="t-mini__body" id="mini-body"></div>
+      </aside>
+
+      <!-- floor selector -->
+      <div class="t-floors" id="floors" role="group" aria-label="Floor">
+        <button type="button" data-floor="1">First</button>
+        <button type="button" data-floor="0" class="is-on">Ground</button>
+      </div>
+
+      <!-- overview cutaway -->
+      <div class="t-cut" id="cut" role="group" aria-label="Cutaway" hidden>
+        <button type="button" data-cut="0" class="is-on">Whole house</button>
+        <button type="button" data-cut="1">First floor</button>
+        <button type="button" data-cut="2">Ground floor</button>
+      </div>
+
+      <!-- guided tour bar -->
+      <div class="t-tour" id="tourbar" hidden>
+        <div class="t-tour__text">
+          <p class="t-label"><span id="tour-n">1</span> of <span id="tour-of">11</span></p>
+          <h2 id="tour-title"></h2>
+          <p id="tour-cap"></p>
+        </div>
+        <div class="t-tour__ctl">
+          <button type="button" class="t-icon" id="tour-prev" aria-label="Previous stop">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 6l-6 6 6 6" /></svg>
+          </button>
+          <button type="button" class="t-icon t-icon--solid" id="tour-play" aria-label="Pause tour">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path class="on" d="M9 6v12m6-12v12" />
+              <path class="off" d="M8 5l11 7-11 7z" />
+            </svg>
+          </button>
+          <button type="button" class="t-icon" id="tour-next" aria-label="Next stop">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 6l6 6-6 6" /></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- how to move -->
+      <div class="t-help" id="help" hidden>
+        <p class="t-help__mouse"><b>Drag</b> to look around. <b>Click</b> the floor to walk there. <b>W A S D</b> or arrow keys to move.</p>
+        <p class="t-help__touch"><b>Drag</b> to look around. <b>Tap</b> the floor to walk there, or use the pad.</p>
+        <button type="button" class="t-help__ok" id="help-ok">Got it</button>
+      </div>
+
+      <!-- touch move pad -->
+      <div class="t-pad" id="pad" aria-hidden="true"><span id="pad-knob"></span></div>
+
+      <!-- modes -->
+      <nav class="t-modes" id="modes" aria-label="Ways to explore">
+        <button type="button" data-mode="explore" class="is-on">Explore</button>
+        <button type="button" data-mode="tour">Guided tour</button>
+        <button type="button" data-mode="plan">Floor plan</button>
+        <button type="button" data-mode="overview">Overview</button>
+      </nav>
+    </div>
+
+    <!-- floor plan panel -->
+    <section class="t-panel" id="plan" hidden aria-label="Floor plan">
+      <header class="t-panel__head">
+        <div class="t-seg" id="plan-tabs" role="tablist" aria-label="Floor">
+          <button type="button" role="tab" data-plan="0" class="is-on" aria-selected="true">Ground floor</button>
+          <button type="button" role="tab" data-plan="1" aria-selected="false">First floor</button>
+        </div>
+        <button type="button" class="t-icon" data-close aria-label="Close floor plan">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+        </button>
+      </header>
+      <div class="t-panel__body">
+        <div class="t-plan" id="plan-svg"></div>
+        <p class="t-label t-panel__hint">Choose a room to stand in it</p>
+        <ol class="t-rooms" id="plan-list"></ol>
+      </div>
+    </section>
+
+    <!-- about this model -->
+    <section class="t-panel t-panel--info" id="info" hidden aria-label="About this model">
+      <header class="t-panel__head">
+        <h2>About this model</h2>
+        <button type="button" class="t-icon" data-close aria-label="Close">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+        </button>
+      </header>
+      <div class="t-panel__body t-prose">
+        <h3>From the drawings</h3>
+        <p>
+          Room positions, sizes, doors, glazing, the pool, the sunken sitting area, both terraces, the outside stair and the furniture
+          layout are taken from the ground and first floor plans, at the scale given by the dimension schedule. The plot, gate, trees and
+          garden pavilion follow the master plan.
+        </p>
+        <h3>From the renders</h3>
+        <p>
+          Terracotta lime plaster, the jaali crown over the multi room, brick jaali screens at the entrance, the planted pergolas, the urns
+          and the late afternoon light.
+        </p>
+        <h3>Design proposal</h3>
+        <p>
+          Interiors are not shown in the drawings. Finishes, furniture, lighting, bathroom fittings, ceiling heights (10 ft on the ground
+          floor), the 2 ft plinth and all planting species are our proposal in the spirit of the renders.
+        </p>
+        <h3>Still open</h3>
+        <ul>
+          <li>The mud bath is labelled 5′0″ × 32″ but drawn about 10′0″ × 6′3″. It is modelled as drawn.</li>
+          <li>Outdoor sitting is given as 20′ × 30″ running ft. It is modelled as a built-in seat 30″ deep along two parapets.</li>
+          <li>
+            The outside stair appears on both plans without risers or a landing size. It is modelled as a straight flight but the tour
+            changes floor with a fade.
+          </li>
+          <li>
+            The pool render shows the upper volume about 38 ft wide; the first floor plan gives a 22′9″ room plus bathroom. The room follows
+            the plan and the jaali crown overhangs it.
+          </li>
+          <li>
+            Both terraces are labelled 21′6″ × 36′6″, yet they are L-shaped on plan. They are modelled as the roof of the floor below.
+          </li>
+          <li>The pool on the first floor plan is the ground floor pool seen from above. There is one pool.</li>
+        </ul>
+      </div>
+    </section>
+
+    <script type="module" src="/src/tour/main.js"></script>
+  </body>
+</html>

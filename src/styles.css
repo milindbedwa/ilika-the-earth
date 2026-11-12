@@ -331,6 +331,17 @@ em {
 .btn--light:hover {
   color: var(--cream);
 }
+/* outlined, for dark grounds */
+.btn--line {
+  color: var(--cream);
+  box-shadow: inset 0 0 0 1px rgb(241 231 214 / 0.55);
+}
+.btn--line::before {
+  background: var(--cream);
+}
+.btn--line:hover {
+  color: var(--earth);
+}
 
 /* ---------- media ---------- */
 .media {
@@ -621,6 +632,16 @@ em {
 }
 .menu-open .menu__foot {
   opacity: 1;
+}
+.menu__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+@media (max-width: 420px) {
+  .menu__actions .btn {
+    padding: 0 20px;
+  }
 }
 
 /* ==========================================================================

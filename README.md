@@ -47,6 +47,31 @@ Vector artwork (logo, icons, ground-floor plan) is in `src/svg` and `public/svg`
 npm run brochure   # needs Playwright's Chromium: npx playwright install chromium
 ```
 
+## 3D tour
+
+`tour.html` is a second page: a walkable 3D model of one farmhouse, opened from the "Take a tour" buttons in the header, the menu and the footer. It is built with three.js (only loaded on that page) and everything in it is generated in the browser: there are no model, texture or sound files to maintain.
+
+| File                    | What it holds                                                                                 |
+| ----------------------- | --------------------------------------------------------------------------------------------- |
+| `src/tour/plan.js`      | The measured plan: rooms, walls, openings, roof outline, site, guided tour stops. Start here. |
+| `src/tour/build.js`     | Walls, floors, pool court, terraces, jaali crown, stair, boundary, pavilion structure         |
+| `src/tour/furnish.js`   | Furniture and fittings                                                                        |
+| `src/tour/garden.js`    | Planting                                                                                      |
+| `src/tour/materials.js` | Painted textures, sky and water                                                               |
+| `src/tour/nav.js`       | Collision and route finding                                                                   |
+| `src/tour/main.js`      | Lighting, movement, guided tour, interface                                                    |
+
+Plan coordinates in `plan.js` are the drawing units of `public/svg/plan-ground.svg` (3.5 units to the foot), so a wall can be moved by reading its position straight off the SVG.
+
+**What is documented and what is not**
+
+- From the plans and schedules: room positions and sizes, doors and glazing, the pool and sunken sitting area, both terraces, the outside stair, the furniture layout. From the master plan: plot, gate, trees, garden pavilion.
+- From the renders: terracotta plaster, the jaali crown, brick jaali screens at the entrance, planted pergolas, urns, late afternoon light.
+- Design proposal (not on any drawing): interior finishes and furniture, lighting, bathroom fittings, ceiling heights (10 ft ground floor), the 2 ft plinth, planting species.
+- Still open, and listed for visitors under the "i" button in the tour: the mud bath size (labelled 5′0″ × 32″, drawn about 10′0″ × 6′3″), the outdoor sitting size (20′ × 30″ running ft), the stair's risers and landing, the width of the upper volume (wider in the pool render than on the first floor plan), and the terrace sizes (labelled 21′6″ × 36′6″ but L-shaped on plan).
+
+Add `?lock` to the URL to hold the resolution steady (useful for screenshots); otherwise it adapts to the device's frame rate.
+
 ## Editing content
 
 All copy is in [`index.html`](index.html). Shorthand used there:

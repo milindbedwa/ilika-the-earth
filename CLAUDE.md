@@ -7,8 +7,9 @@ Marketing site for ILIKA, lime-plastered farmhouses in Jilod, Anand, Gujarat. St
 - **Website only.** Do not edit the brochure: `brochure/`, `scripts/build-brochure.mjs`, `public/ilika-the-earth-brochure.pdf`.
 - **No em dashes (—) in visible copy.** Use a comma, colon or full stop. Ranges are written out ("25 to 30 min").
 - All copy is in `index.html`; styles in `src/styles.css` (mobile-first, desktop at `min-width: 900px`); behaviour in `src/main.js`.
+- The 3D tour is a separate page: `tour.html` + `src/tour/` (three.js). Room and wall positions live in `src/tour/plan.js`, in the drawing units of `public/svg/plan-ground.svg`. See "3D tour" in `README.md`.
 - Keep the design: cream / terracotta palette, serif display headings, minimal UI. Match the surrounding code's naming and comment style.
-- Run `npx prettier --check index.html src/styles.css src/main.js` and `npm run build` before finishing; both must pass.
+- Run `npx prettier --check index.html tour.html src/styles.css src/main.js src/tour` and `npm run build` before finishing; both must pass.
 
 ## Photos
 

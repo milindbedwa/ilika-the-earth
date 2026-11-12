@@ -53,5 +53,11 @@ function ilikaHtml() {
 
 export default defineConfig({
   plugins: [ilikaHtml()],
-  build: { target: 'es2020', assetsInlineLimit: 0 },
+  build: {
+    target: 'es2020',
+    assetsInlineLimit: 0,
+    // two pages: the site, and the 3D tour (three.js only loads there)
+    rollupOptions: { input: { main: path.join(root, 'index.html'), tour: path.join(root, 'tour.html') } },
+    chunkSizeWarningLimit: 900,
+  },
 });
