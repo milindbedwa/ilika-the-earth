@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import * as P from './plan.js';
 import { makeMaterials, makeSky } from './materials.js';
 import { buildHouse, finish } from './build.js';
-import { plantGarden } from './garden.js';
+import { plantGarden, makeGrass } from './garden.js';
 import { furnish } from './furnish.js';
 import { Nav } from './nav.js';
 import { Ambience } from './audio.js';
@@ -77,6 +77,7 @@ async function boot() {
   await step(0.62, 'Furnishing the rooms');
   furnish(ctx);
   ctx.plantFlush();
+  makeGrass(ctx);
   finish(ctx);
   for (const g of Object.values(ctx.groups)) scene.add(g);
   await step(0.78, 'Checking every doorway');
@@ -128,7 +129,7 @@ async function boot() {
       fog: '#ecd6bb',
       env: 0.62,
       exp: 1.0,
-      water: ['#9ec3da', '#2f8f93', '#86d6cc'],
+      pool: 1,
     },
     dusk: {
       dir: [-0.9, 0.13, 0.36],
@@ -145,7 +146,7 @@ async function boot() {
       fog: '#a47f86',
       env: 0.7,
       exp: 1.35,
-      water: ['#8a86a8', '#1f5f6e', '#4f9aa0'],
+      pool: 0.22,
     },
   };
   let dusk = false;
@@ -176,10 +177,10 @@ async function boot() {
     if (!renderer.toneMappingExposure || mode === 'intro') renderer.toneMappingExposure = L.exp * 1.15;
     const w = ctx.water.material.uniforms;
     w.uSun.value.copy(d);
-    w.uSky.value.set(L.water[0]);
-    w.uDeep.value.set(L.water[1]);
-    w.uShallow.value.set(L.water[2]);
+    w.uSky.value.set(L.top);
+    w.uHorizon.value.set(L.mid);
     w.uSunCol.value.set(L.glow);
+    w.uLight.value = L.pool;
     M.setDusk(isDusk ? 1 : 0);
     for (const pl of lampLights) {
       pl.visible = isDusk;
@@ -833,6 +834,10 @@ async function boot() {
     last = now;
     if (canvas.clientWidth !== sizeW || canvas.clientHeight !== sizeH) resize(); // catches rotation and browser bars
     update(Math.min(0.05, raw));
+    // the patch of grass blades sits just ahead of the visitor
+    const gt = ctx.grass.uniforms.uTile.value * 0.26;
+    ctx.grass.uniforms.uCam.value.set(camera.position.x - Math.sin(me.yaw) * gt, camera.position.z - Math.cos(me.yaw) * gt);
+    ctx.grass.mesh.visible = mode !== 'overview';
     ao.enabled = aoOn;
     if (plain) renderer.render(scene, camera);
     else composer.render();

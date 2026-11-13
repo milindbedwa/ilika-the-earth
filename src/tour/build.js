@@ -362,9 +362,9 @@ export function buildHouse(M, opts = {}) {
     B.ground.pbox(M.deck, r, PLINTH, PLINTH + 0.025);
   psolid(0, [pool[0] + 0.6, pool[1] + 0.6, pool[2], pool[3] - 0.6]);
   const pr = P.rect(pool[0] + cw, pool[1] + cw, pool[2] - cw, pool[3] - cw);
-  const water = makeWater(pr.maxX - pr.minX, pr.maxZ - pr.minZ);
+  const water = makeWater(pr.maxX - pr.minX, pr.maxZ - pr.minZ, PLINTH - 0.1 + 0.9);
   water.position.set((pr.minX + pr.maxX) / 2, PLINTH - 0.1, (pr.minZ + pr.maxZ) / 2);
-  water.userData.noAO = true;
+  water.material.uniforms.uC.value.set(water.position.x, water.position.z);
   groups.ground.add(water);
   // garden-side steps up to the pool edge, as in the pool render
   for (let i = 0; i < 3; i++) {

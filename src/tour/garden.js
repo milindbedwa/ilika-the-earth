@@ -223,17 +223,20 @@ export function plantGarden(ctx) {
   const r = rng(7);
   const lite = ctx.opts.lite;
   const kinds = {
-    agave: { g: rosette(r, { n: 12, len: 0.8, wid: 0.16, lean0: 0.2, lean1: 1.3, rings: 2 }), m: M.blade },
-    fern: { g: rosette(r, { n: 11, len: 1.15, wid: 0.34, lean0: 0.2, lean1: 1.95, seg: 6, fold: 0.2 }), m: M.frond },
-    banana: { g: rosette(r, { n: 7, len: 1.9, wid: 0.62, lean0: 0.08, lean1: 1.25, seg: 6, fold: 0.25 }), m: M.broad },
-    spike: { g: rosette(r, { n: 20, len: 0.95, wid: 0.07, lean0: 0.05, lean1: 0.75, seg: 3, rings: 2 }), m: M.blade },
+    agave: { g: rosette(r, { n: 14, len: 0.8, wid: 0.17, lean0: 0.2, lean1: 1.3, rings: 2 }), m: M.blade },
+    fern: { g: rosette(r, { n: 13, len: 1.1, wid: 0.3, lean0: 0.25, lean1: 1.95, seg: 6, fold: 0.2, rings: 2 }), m: M.fernLeaf },
+    banana: { g: rosette(r, { n: 8, len: 2.3, wid: 0.72, lean0: 0.06, lean1: 1.25, seg: 7, fold: 0.22 }), m: M.broad },
+    bird: { g: rosette(r, { n: 10, len: 1.5, wid: 0.42, lean0: 0.04, lean1: 0.6, seg: 5, fold: 0.3 }), m: M.broad },
+    philo: { g: rosette(r, { n: 11, len: 0.8, wid: 0.46, lean0: 0.45, lean1: 1.5, seg: 4, fold: 0.12, rings: 2 }), m: M.heart },
+    spike: { g: rosette(r, { n: lite ? 26 : 42, len: 1.0, wid: 0.04, lean0: 0.04, lean1: 1.05, seg: 4, rings: 3, fold: 0.5 }), m: M.reed },
     creeper: { g: creeper(), m: M.vine },
     palm: { g: palmCrown(r), m: M.frond },
     palmTrunk: { g: trunkGeo(1, 0.17, 0.11, 0.08), m: M.bark },
     treeA: { g: canopy(r, { clumps: 7, spread: 3.4, rad: 1.5, y0: 3.6, card: 1.75, per: lite ? 14 : 26 }), m: M.leafSpray },
     treeB: { g: canopy(r, { clumps: 5, spread: 2.8, rad: 1.35, y0: 3.3, card: 1.65, per: lite ? 14 : 26 }), m: M.leafSpray },
     treeTrunk: { g: trunkGeo(3.9, 0.2, 0.13, 0.1, 4, r), m: M.bark },
-    bush: { g: canopy(r, { clumps: 4, spread: 0.8, rad: 0.42, y0: 0.3, card: 0.5, per: lite ? 10 : 16 }), m: M.leafSpray },
+    bush: { g: canopy(r, { clumps: 5, spread: 0.8, rad: 0.42, y0: 0.3, card: 0.5, per: lite ? 10 : 18 }), m: M.leafSpray },
+    jasmine: { g: canopy(r, { clumps: 5, spread: 0.9, rad: 0.45, y0: 0.32, card: 0.55, per: lite ? 10 : 18 }), m: M.bloom },
   };
   const lists = new Map();
   const dummy = new THREE.Object3D();
@@ -266,7 +269,10 @@ export function plantGarden(ctx) {
   const bed = (x0, z0, x1, z1, n, y = 0, group = 'site', mix = ['agave', 'agave', 'fern', 'spike'], sc = 1, wob = 0.25) => {
     for (let i = 0; i < n; i++) {
       const k = (i + 0.5) / n;
-      const kind = mix[(r() * mix.length) | 0];
+      let kind = mix[(r() * mix.length) | 0];
+      if (kind === 'fern' && r() < 0.35) kind = 'philo';
+      else if (kind === 'banana' && r() < 0.45) kind = 'bird';
+      else if (kind === 'bush' && r() < 0.5) kind = 'jasmine';
       add(kind, group, x0 + (x1 - x0) * k + (r() - 0.5) * wob, y, z0 + (z1 - z0) * k + (r() - 0.5) * wob, sc * (0.75 + r() * 0.5));
     }
   };
@@ -321,13 +327,33 @@ export function plantGarden(ctx) {
     palm(x, z, 5 + r() * 3);
     solid(0, { minX: x - 0.25, maxX: x + 0.25, minZ: z - 0.25, maxZ: z + 0.25 });
   }
-  // --- borders along the inside of the boundary wall ---
-  const m = 0.9;
-  bed(pl.minX + m, pl.maxZ - m, pl.maxX - m, pl.maxZ - m, 46, 0, 'site', ['agave', 'fern', 'fern', 'banana', 'spike', 'bush'], 1.1, 0.8);
-  bed(pl.minX + m, pl.minZ + m, pl.maxX - m, pl.minZ + m, 46, 0, 'site', ['agave', 'fern', 'fern', 'banana', 'spike', 'bush'], 1.1, 0.8);
-  bed(pl.maxX - m, pl.minZ + m, pl.maxX - m, pl.maxZ - m, 40, 0, 'site', ['agave', 'fern', 'banana', 'spike', 'bush'], 1.1, 0.8);
-  bed(pl.minX + m, pl.maxZ - m, pl.minX + m, P.GATE.z1 + 1, 26, 0, 'site', ['agave', 'fern', 'banana', 'spike', 'bush'], 1.1, 0.8);
-  bed(pl.minX + m, P.GATE.z0 - 1, pl.minX + m, pl.minZ + m, 9, 0, 'site', ['agave', 'fern', 'banana', 'bush'], 1.1, 0.8);
+  // --- borders along the inside of the boundary wall: a mulched bed, tall plants behind, low in front ---
+  const m = 0.8;
+  const bw = 1.9;
+  const gz0 = P.GATE.z0 - 0.4;
+  const gz1 = P.GATE.z1 + 0.4;
+  const beds = [
+    [pl.minX, pl.maxX, pl.maxZ - bw, pl.maxZ],
+    [pl.minX, pl.maxX, pl.minZ, pl.minZ + bw],
+    [pl.maxX - bw, pl.maxX, pl.minZ + bw, pl.maxZ - bw],
+    [pl.minX, pl.minX + bw, gz1, pl.maxZ - bw],
+    [pl.minX, pl.minX + bw, pl.minZ + bw, gz0],
+  ];
+  for (const [x0, x1, z0, z1] of beds) B.site.box(M.soil, x0, x1, 0, 0.025, z0, z1);
+  ctx.beds = beds;
+  const tall = ['fern', 'banana', 'banana', 'bush', 'spike', 'fern'];
+  const low = ['agave', 'fern', 'spike', 'agave', 'bush'];
+  const k = lite ? 0.7 : 1;
+  bed(pl.minX + m, pl.maxZ - m, pl.maxX - m, pl.maxZ - m, 56 * k, 0, 'site', tall, 1.15, 0.5);
+  bed(pl.minX + m, pl.maxZ - 1.5, pl.maxX - m, pl.maxZ - 1.5, 70 * k, 0, 'site', low, 0.8, 0.4);
+  bed(pl.minX + m, pl.minZ + m, pl.maxX - m, pl.minZ + m, 56 * k, 0, 'site', tall, 1.15, 0.5);
+  bed(pl.minX + m, pl.minZ + 1.5, pl.maxX - m, pl.minZ + 1.5, 70 * k, 0, 'site', low, 0.8, 0.4);
+  bed(pl.maxX - m, pl.minZ + bw, pl.maxX - m, pl.maxZ - bw, 46 * k, 0, 'site', tall, 1.15, 0.5);
+  bed(pl.maxX - 1.5, pl.minZ + bw, pl.maxX - 1.5, pl.maxZ - bw, 58 * k, 0, 'site', low, 0.8, 0.4);
+  bed(pl.minX + m, pl.maxZ - bw, pl.minX + m, gz1 + 0.6, 32 * k, 0, 'site', tall, 1.15, 0.5);
+  bed(pl.minX + 1.5, pl.maxZ - bw, pl.minX + 1.5, gz1 + 0.6, 40 * k, 0, 'site', low, 0.8, 0.4);
+  bed(pl.minX + m, gz0 - 0.6, pl.minX + m, pl.minZ + bw, 9 * k, 0, 'site', tall, 1.15, 0.5);
+  bed(pl.minX + 1.5, gz0 - 0.6, pl.minX + 1.5, pl.minZ + bw, 11 * k, 0, 'site', low, 0.8, 0.4);
 
   // --- pool front: beds either side of the garden steps and along the wing steps ---
   const zl = Z(517.7) + 0.55;
@@ -416,4 +442,164 @@ export function plantGarden(ctx) {
       groups[group].add(mesh);
     }
   };
+}
+
+// ---- the lawn: real blades, but only around the visitor ----
+// A square of grass tufts follows the camera. Each tuft's position wraps inside that square, so
+// walking never runs out of grass and the cost stays the same anywhere on the plot. A mask of the
+// plot (white = lawn) keeps blades off paving, beds, water and floors.
+export function makeGrass(ctx) {
+  const { M, groups } = ctx;
+  const lite = ctx.opts.lite;
+  const r = rng(41);
+  const tile = lite ? 11 : 16; // metres across
+  const count = lite ? 24000 : 72000;
+
+  // one tuft: a few curved blades
+  const pos = [];
+  const col = [];
+  const base = new THREE.Color('#33501c');
+  const mid = new THREE.Color('#587c2e');
+  const tip = new THREE.Color('#8fab4e');
+  const blades = lite ? 3 : 4;
+  for (let b = 0; b < blades; b++) {
+    const a = (b / blades) * Math.PI * 2 + r();
+    const h = 0.04 + r() * 0.035;
+    const w = 0.0045 + r() * 0.003;
+    const lean = 0.01 + r() * 0.022;
+    const dx = Math.cos(a);
+    const dz = Math.sin(a);
+    const ox = dx * 0.012;
+    const oz = dz * 0.012;
+    const v = (k, s) => [ox + dx * lean * k * k - dz * w * s * (1 - k * 0.7), h * k, oz + dz * lean * k * k + dx * w * s * (1 - k * 0.7)];
+    const quad = [v(0, -1), v(0, 1), v(0.55, 1), v(0.55, -1), v(1, 0)];
+    const cs = [base, base, mid, mid, tip];
+    for (const i of [0, 1, 2, 0, 2, 3, 3, 2, 4]) {
+      pos.push(...quad[i]);
+      col.push(cs[i].r, cs[i].g, cs[i].b);
+    }
+  }
+  const geo = new THREE.InstancedBufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  geo.setAttribute(
+    'normal',
+    new THREE.Float32BufferAttribute(
+      new Float32Array(pos.length).map((_, i) => (i % 3 === 1 ? 1 : 0)),
+      3,
+    ),
+  );
+  const off = new Float32Array(count * 4);
+  for (let i = 0; i < count; i++) {
+    off[i * 4] = r() * tile;
+    off[i * 4 + 1] = r() * tile;
+    off[i * 4 + 2] = r() * 6.283;
+    off[i * 4 + 3] = 0.7 + r() * 0.55;
+  }
+  geo.setAttribute('aOff', new THREE.InstancedBufferAttribute(off, 4));
+  geo.instanceCount = count;
+
+  // lawn mask over the plot and a margin around it
+  const pl = P.PLOT;
+  const pad = 4;
+  const x0 = pl.minX - pad;
+  const z0 = pl.minZ - pad;
+  const W = pl.maxX - pl.minX + pad * 2;
+  const D = pl.maxZ - pl.minZ + pad * 2;
+  const S = 1024;
+  const c = document.createElement('canvas');
+  c.width = c.height = S;
+  const g = c.getContext('2d');
+  g.fillStyle = '#fff';
+  g.fillRect(0, 0, S, S);
+  g.fillStyle = '#000';
+  const cut = (minX, maxX, minZ, maxZ, grow = 0.04) =>
+    g.fillRect(
+      ((minX - grow - x0) / W) * S,
+      ((minZ - grow - z0) / D) * S,
+      ((maxX - minX + grow * 2) / W) * S,
+      ((maxZ - minZ + grow * 2) / D) * S,
+    );
+  const pcut = (a, b, cc, d) => {
+    const q = P.rect(a, b, cc, d);
+    cut(q.minX, q.maxX, q.minZ, q.maxZ);
+  };
+  pcut(342.2, 77.2, 514, 332); // house, decks and wing steps
+  pcut(452, 164.7, 517.7, 245.5); // sunken seat and pool
+  pcut(517.7, 176, 529.2, 234); // pool steps
+  pcut(320.8, 172.6, 343, 233.4); // entrance steps
+  pcut(372, 333.4, 461.1, 347.5); // outside stair
+  pcut(432.4, 64.9, 465.6, 77.2); // window bays
+  pcut(428.4, 332, 459.6, 344.1);
+  const gate = P.GATE;
+  cut(pl.minX - 6, 3.4, gate.z0, gate.z1); // drive
+  cut(-3.2, 3.4, gate.z1, Z(320.8));
+  for (const py of [106, 303])
+    for (let i = 0; i < 6; i++) cut(X(py) - 0.9, X(py) + 0.9, Z(516) + 0.35 + i * 0.95, Z(516) + 1.0 + i * 0.95, 0.01);
+  const pv = P.PAVILION;
+  cut(pv.minX - 0.75, pv.maxX, pv.minZ, pv.maxZ);
+  for (const [bx0, bx1, bz0, bz1] of ctx.beds || []) cut(bx0, bx1, bz0, bz1, 0);
+  // boundary wall
+  cut(pl.minX - 0.2, pl.maxX + 0.2, pl.minZ - 0.2, pl.minZ, 0.02);
+  cut(pl.minX - 0.2, pl.maxX + 0.2, pl.maxZ, pl.maxZ + 0.2, 0.02);
+  cut(pl.maxX, pl.maxX + 0.2, pl.minZ, pl.maxZ, 0.02);
+  cut(pl.minX - 0.2, pl.minX, pl.minZ, pl.maxZ, 0.02);
+  const mask = new THREE.CanvasTexture(c);
+  mask.flipY = false;
+  mask.generateMipmaps = false;
+  mask.minFilter = mask.magFilter = THREE.LinearFilter;
+
+  const uniforms = {
+    uCam: { value: new THREE.Vector2() },
+    uTile: { value: tile },
+    uMask: { value: mask },
+    uPlot: { value: new THREE.Vector4(x0, z0, W, D) },
+    uWind: M.wind,
+  };
+  const mat = new THREE.MeshStandardMaterial({ vertexColors: true, side: THREE.DoubleSide, roughness: 0.7, envMapIntensity: 0.3 });
+  mat.onBeforeCompile = (sh) => {
+    Object.assign(sh.uniforms, uniforms);
+    sh.vertexShader = sh.vertexShader
+      .replace(
+        '#include <common>',
+        `#include <common>
+        attribute vec4 aOff;
+        uniform vec2 uCam; uniform float uTile; uniform float uWind; uniform sampler2D uMask; uniform vec4 uPlot;`,
+      )
+      .replace('#include <beginnormal_vertex>', 'vec3 objectNormal = vec3(0.0, 1.0, 0.0);')
+      .replace(
+        '#include <color_vertex>',
+        `#include <color_vertex>
+        float tone = fract(sin(dot(aOff.xy, vec2(12.9898, 78.233))) * 43758.5453);
+        vColor.rgb *= 0.78 + 0.44 * tone;
+        vColor.r *= 0.9 + 0.35 * fract(tone * 7.3);`,
+      )
+      .replace(
+        '#include <begin_vertex>',
+        `// wrap the tuft into the square around the camera
+        vec2 root = mod(aOff.xy - uCam + uTile * 0.5, uTile) - uTile * 0.5 + uCam;
+        float far = distance(root, uCam);
+        float lawn = step(0.5, texture2D(uMask, (root - uPlot.xy) / uPlot.zw).r);
+        float grow = aOff.w * lawn * (1.0 - smoothstep(uTile * 0.3, uTile * 0.48, far));
+        float cs = cos(aOff.z), sn = sin(aOff.z);
+        vec3 p = vec3(position.x * cs - position.z * sn, position.y, position.x * sn + position.z * cs) * grow;
+        // gusts cross the lawn as moving bands; blades bend most at the tip
+        float gust = sin(uWind * 1.4 + root.x * 0.9 + root.y * 0.55) * 0.6 + sin(uWind * 3.1 - root.x * 2.3 + root.y * 1.9) * 0.25 + sin(uWind * 6.0 + aOff.z * 5.0) * 0.15;
+        float k = position.y / 0.075;
+        p.x += (gust + 0.3) * 0.02 * k * k * grow;
+        p.z += gust * 0.012 * k * k * grow;
+        vec3 transformed = vec3(root.x, 0.0, root.y) + p;`,
+      );
+    // both faces of a blade catch the light the same way
+    sh.fragmentShader = sh.fragmentShader.replace(
+      '#include <normal_fragment_begin>',
+      THREE.ShaderChunk.normal_fragment_begin.replace('float faceDirection = gl_FrontFacing ? 1.0 : - 1.0;', 'float faceDirection = 1.0;'),
+    );
+  };
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.frustumCulled = false;
+  mesh.receiveShadow = true;
+  mesh.userData.noAO = true;
+  groups.site.add(mesh);
+  ctx.grass = { mesh, uniforms };
 }
