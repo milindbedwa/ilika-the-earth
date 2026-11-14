@@ -1,11 +1,13 @@
 // ILIKA · Take a tour. Scene set-up, lighting, movement, guided tour and the small interface.
 import * as THREE from 'three';
 import * as P from './plan.js';
-import { makeMaterials, makeSky } from './materials.js';
+import { makeMaterials } from './materials.js';
+import { makeSky, loadSky, sunDirection } from './sky.js';
 import { buildHouse, finish } from './build.js';
 import { plantGarden, makeGrass } from './garden.js';
 import { furnish } from './furnish.js';
 import { Nav } from './nav.js';
+import { loadModels, flushModels } from './models.js';
 import { Ambience } from './audio.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
@@ -68,23 +70,30 @@ async function boot() {
   const camera = new THREE.PerspectiveCamera(58, 1, 0.08, 500);
   camera.rotation.order = 'YXZ';
 
-  await step(0.12, 'Mixing lime plaster');
-  const M = makeMaterials({ aniso: Math.min(8, renderer.capabilities.getMaxAnisotropy()), lite });
-  await step(0.3, 'Raising the walls');
+  await step(0.08, 'Mixing lime plaster');
+  const M = makeMaterials({
+    aniso: Math.min(8, renderer.capabilities.getMaxAnisotropy()),
+    lite,
+    onProgress: (k) => (bar.style.transform = `scaleX(${0.3 + 0.6 * k})`),
+  });
+  const modelsP = loadModels(M);
+  await step(0.14, 'Raising the walls');
   const ctx = buildHouse(M, { lite });
-  await step(0.48, 'Planting the garden');
+  await step(0.2, 'Planting the garden');
+  ctx.models = await modelsP;
   plantGarden(ctx);
-  await step(0.62, 'Furnishing the rooms');
+  await step(0.25, 'Furnishing the rooms');
   furnish(ctx);
   ctx.plantFlush();
+  flushModels(ctx);
   makeGrass(ctx);
   finish(ctx);
   for (const g of Object.values(ctx.groups)) scene.add(g);
-  await step(0.78, 'Checking every doorway');
+  await step(0.28, 'Checking every doorway');
   const nav = new Nav(ctx);
 
   // ---------- light ----------
-  await step(0.9, 'Waiting for the light');
+  await step(0.3, 'Bringing in stone, timber and sky');
   const sky = makeSky();
   scene.add(sky);
   const sun = new THREE.DirectionalLight('#ffd2a0', 3);
@@ -96,7 +105,7 @@ async function boot() {
   sun.shadow.normalBias = 0.02;
   sun.shadow.radius = 3;
   scene.add(sun, sun.target);
-  const hemi = new THREE.HemisphereLight('#cfe0f0', '#a07a5c', 0.5);
+  const hemi = new THREE.HemisphereLight('#e6ecf2', '#c9a989', 0.06); // a whisper of bounce from the ground
   scene.add(hemi);
   scene.fog = new THREE.Fog('#e9d2b6', 40, 185);
   const lampLights = ctx.lamps.slice(0, lite ? 6 : 12).map((l) => {
@@ -107,55 +116,49 @@ async function boot() {
     scene.add(pl);
     return pl;
   });
-  const pmrem = new THREE.PMREMGenerator(renderer);
-  // the light that fills the rooms comes from a calmer, warmer copy of the sky
-  const envScene = new THREE.Scene();
-  const envSky = makeSky();
-  envScene.add(envSky);
-  let envRT = null;
+  // Day and dusk. The sky photo supplies the soft light from all around; the sun is a lamp placed
+  // where the photo's sun stands, because only a lamp can cast the shadows.
   const LIGHT = {
     day: {
-      dir: [-0.8, 0.44, 0.5],
-      sun: '#ffe1c2',
-      sunI: 8,
-      hemi: ['#d6e2ee', '#b08c70', 0.25],
-      top: '#4f86c4',
-      mid: '#a9c9e2',
-      low: '#f6dcbb',
-      envTop: '#d3d9de',
-      envMid: '#ece3d6',
-      envLow: '#e6c9a6',
-      glow: '#ffb56e',
-      fog: '#ecd6bb',
-      env: 0.62,
+      sky: 'day',
+      minElev: 0,
+      sun: '#ffd8ac',
+      sunI: 9,
+      hemi: 0.05,
+      glow: '#fff1d6',
+      haze: '#ddd2c0',
+      env: 0.8,
       exp: 1.0,
       pool: 1,
+      top: '#5d8fc6',
+      mid: '#dcd6c8',
     },
     dusk: {
-      dir: [-0.9, 0.13, 0.36],
-      sun: '#ff8f55',
-      sunI: 2.6,
-      hemi: ['#7f8fb6', '#6a4a38', 0.3],
-      top: '#243560',
-      mid: '#8d7190',
-      low: '#f3a070',
-      envTop: '#4f5a7c',
-      envMid: '#8d7b8c',
-      envLow: '#c98a68',
-      glow: '#ff8a4a',
-      fog: '#a47f86',
-      env: 0.7,
-      exp: 1.35,
-      pool: 0.22,
+      sky: 'dusk',
+      minElev: 9,
+      sun: '#ff9a62',
+      sunI: 2.2,
+      hemi: 0.05,
+      glow: '#ffb27a',
+      haze: '#b9a7ac',
+      env: 0.5,
+      exp: 1.3,
+      pool: 0.25,
+      top: '#6f78a0',
+      mid: '#d9b9b0',
     },
   };
   let dusk = false;
   let baseExp = 1;
   let mode = 'intro';
-  function setLight(isDusk) {
+  let lightJob = 0;
+  async function setLight(isDusk) {
     dusk = isDusk;
     const L = isDusk ? LIGHT.dusk : LIGHT.day;
-    const d = new THREE.Vector3(...L.dir).normalize();
+    const job = ++lightJob;
+    const s = await loadSky(L.sky, renderer);
+    if (job !== lightJob) return; // a newer choice was made while this sky was loading
+    const d = sunDirection(Math.max(s.elevation, L.minElev));
     sun.position
       .copy(d)
       .multiplyScalar(80)
@@ -163,16 +166,16 @@ async function boot() {
     sun.target.position.set(0, 0, 0.5);
     sun.color.set(L.sun);
     sun.intensity = L.sunI;
-    hemi.color.set(L.hemi[0]);
-    hemi.groundColor.set(L.hemi[1]);
-    hemi.intensity = L.hemi[2];
+    hemi.intensity = L.hemi;
     const u = sky.material.uniforms;
-    u.uTop.value.set(L.top);
-    u.uMid.value.set(L.mid);
-    u.uLow.value.set(L.low);
+    u.uMap.value = s.map;
+    u.uShift.value = s.shift;
+    u.uV0.value = s.v0;
+    u.uGain.value = s.gain;
+    u.uHaze.value.set(L.haze);
     u.uSunCol.value.set(L.glow);
-    u.uSun.value.copy(d);
-    scene.fog.color.set(L.fog);
+    u.uSun.value.copy(sunDirection(s.elevation));
+    scene.fog.color.set(L.haze);
     baseExp = L.exp;
     if (!renderer.toneMappingExposure || mode === 'intro') renderer.toneMappingExposure = L.exp * 1.15;
     const w = ctx.water.material.uniforms;
@@ -186,19 +189,11 @@ async function boot() {
       pl.visible = isDusk;
       pl.intensity = isDusk ? 7 * pl.userData.power : 0;
     }
-    const eu = envSky.material.uniforms;
-    eu.uTop.value.set(L.envTop);
-    eu.uMid.value.set(L.envMid);
-    eu.uLow.value.set(L.envLow);
-    eu.uSunCol.value.set(L.glow).multiplyScalar(0.5);
-    eu.uSun.value.copy(d);
-    if (envRT) envRT.dispose();
-    envRT = pmrem.fromScene(envScene, 0.03, 1, 1000);
-    scene.environment = envRT.texture;
+    scene.environment = s.env;
     scene.environmentIntensity = L.env;
     renderer.shadowMap.needsUpdate = true;
   }
-  setLight(false);
+  await Promise.all([setLight(false), M.ready]);
 
   // ---------- post-processing: anti-aliasing, ambient occlusion in corners and under furniture ----------
   const target = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType, samples: 4 });

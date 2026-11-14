@@ -6,6 +6,7 @@ import * as P from './plan.js';
 import { Piece } from './build.js';
 import { potGeo } from './garden.js';
 import { rng } from './materials.js';
+import { placeModel } from './models.js';
 
 const { X, Z, U, PLINTH, CEIL, F1, UP_H, PIT } = P;
 // yaw so that a piece's front (+z) faces a plan direction
@@ -38,6 +39,9 @@ export function furnish(ctx) {
     b.add(M.shadow, g);
   };
   const light = (px, py, y, power = 1, dist = 9) => lamps.push({ x: X(py), y, z: Z(px), power, dist });
+
+  // a scanned model at plan (px, py); false if that model did not load, so the caller can fall back
+  const model = (name, group, px, py, y, yaw = 0, scale = 1) => placeModel(ctx, name, group, X(py), y, Z(px), yaw, scale);
 
   // ---------- pieces ----------
   function sofa(b, px, py, y, yaw, len = 2.3) {
@@ -131,6 +135,7 @@ export function furnish(ctx) {
   }
   function nightstand(b, px, py, y) {
     const p = pc(b, px, py, y, 0);
+    if (model('sidetable', 'ground', px, py, y)) return (tableLamp(b, px, py, y + 0.55), foot(0, px, py, 0.55, 0.45));
     p.box(M.timber, 0, 0.06, 0, 0.46, 0.4, 0.44);
     p.box(M.timberDark, 0, 0, 0, 0.36, 0.06, 0.34);
     tableLamp(b, px, py, y + 0.46);
@@ -274,35 +279,51 @@ export function furnish(ctx) {
   rug(G, [370.5, 164.7, 420, 194.6], y0);
   sofa(G, 395, 188.6, y0, NY, 2.3);
   for (const px of [378.6, 411.4]) {
-    table(G, px, 189, y0, 0, 0.42, 0.42, 0.5);
-    tableLamp(G, px, 189, y0 + 0.5);
-    foot(0, px, 189, 0.42, 0.42);
+    const sm = model('sidetable', 'ground', px, 189, y0);
+    if (!sm) table(G, px, 189, y0, 0, 0.42, 0.42, 0.5);
+    tableLamp(G, px, 189, y0 + (sm ? 0.55 : 0.5));
+    foot(0, px, 189, 0.5, 0.5);
   }
-  const ct = pc(G, 394.6, 176.6, y0, NY);
-  ct.box(M.sand, 0, 0.26, 0, 1.25, 0.1, 0.68);
-  ct.box(M.timberDark, -0.4, 0, 0, 0.14, 0.26, 0.5);
-  ct.box(M.timberDark, 0.4, 0, 0, 0.14, 0.26, 0.5);
-  ct.cyl(M.pot, 0.25, 0.36, 0.05, 0.09, 0.16, 0.06, 14);
-  ct.cyl(M.ceramic, -0.2, 0.36, -0.08, 0.16, 0.035, 0.1, 18);
+  if (model('coffee', 'ground', 394.6, 176.6, y0, 0)) {
+    model('bowl', 'ground', 391.5, 176.2, y0 + 0.39, 0.6);
+    model('vase2', 'ground', 398.6, 177.2, y0 + 0.39, 1.2, 0.8);
+  } else {
+    const ct = pc(G, 394.6, 176.6, y0, NY);
+    ct.box(M.sand, 0, 0.26, 0, 1.25, 0.1, 0.68);
+    ct.box(M.timberDark, -0.4, 0, 0, 0.14, 0.26, 0.5);
+    ct.box(M.timberDark, 0.4, 0, 0, 0.14, 0.26, 0.5);
+    ct.cyl(M.pot, 0.25, 0.36, 0.05, 0.09, 0.16, 0.06, 14);
+    ct.cyl(M.ceramic, -0.2, 0.36, -0.08, 0.16, 0.035, 0.1, 18);
+  }
   blob(G, 394.6, 176.6, y0, 0.68, 1.25);
   foot(0, 394.6, 176.6, 1.25, 0.68, NY);
   daybed(G, 377.6, 176.5, y0, PX + Math.PI / 2, 1.3);
   loungeChair(G, 412, 172.4, y0, NX);
   loungeChair(G, 412, 181.6, y0, NX);
   // console and art on the bedroom wall
-  cabinet(G, 392, 138.4, y0, PY, 2.4, 0.42, 0.62, 4);
-  const cs = pc(G, 392, 138.4, y0 + 0.62, PY);
-  cs.cyl(M.potPale, -0.7, 0, 0, 0.11, 0.34, 0.07, 16);
-  cs.cyl(M.pot, -0.42, 0, 0.02, 0.08, 0.2, 0.05, 16);
-  cs.cyl(M.ceramic, 0.6, 0, 0, 0.2, 0.05, 0.12, 20);
+  const scanCab = model('cabinet', 'ground', 392, 139, y0, PY);
+  if (scanCab) foot(0, 392, 139, 2.44, 0.52, PY);
+  else cabinet(G, 392, 138.4, y0, PY, 2.4, 0.42, 0.62, 4);
+  const cs = pc(G, 392, 138.4, y0 + (scanCab ? 0.68 : 0.62), PY);
+  if (scanCab) {
+    model('vase1', 'ground', 400.2, 139, y0 + 0.68, 0.4);
+    model('vase4', 'ground', 397.4, 139.3, y0 + 0.68, 2.1);
+    model('basket', 'ground', 384.6, 139, y0 + 0.68, 0.2);
+  } else {
+    cs.cyl(M.potPale, -0.7, 0, 0, 0.11, 0.34, 0.07, 16);
+    cs.cyl(M.pot, -0.42, 0, 0.02, 0.08, 0.2, 0.05, 16);
+    cs.cyl(M.ceramic, 0.6, 0, 0, 0.2, 0.05, 0.12, 20);
+  }
   cs.box(M.timberDark, 0.1, 0.62, -0.18, 1.5, 1.0, 0.03);
   cs.box(M.art, 0.1, 0.66, -0.165, 1.42, 0.92, 0.012);
   cs.box(M.linenWarm, 0.1, 0.9, -0.158, 1.42, 0.2, 0.004);
   fan(G, 395, 178, ceilY);
   fan(G, 395, 226, ceilY);
   light(395, 180, y0 + 2.3, 1.2, 10);
-  pot(G, 366.6, 228.6, y0, 0.62, 0.3, M.pot, 'banana', 'ground', 0, 0.7);
-  pot(G, 424.6, 171, y0, 0.55, 0.27, M.potPale, 'fern', 'ground', 0, 0.9);
+  pot(G, 366.6, 222.5, y0, 0.62, 0.3, M.pot, 'banana', 'ground', 0, 0.7);
+  if (model('potplant', 'ground', 424.4, 171, y0, 0.8, 1.15)) foot(0, 424.4, 171, 0.5, 0.5);
+  else pot(G, 424.6, 171, y0, 0.55, 0.27, M.potPale, 'fern', 'ground', 0, 0.9);
+  if (model('potplant2', 'ground', 366, 230.5, y0, 2.2, 1.1)) foot(0, 366, 230.5, 0.5, 0.5);
   for (const [c, a, b2] of [
     [364.2, 173, 181],
     [364.2, 225, 233],
@@ -332,8 +353,13 @@ export function furnish(ctx) {
   chair(G, 410.8, 224, y0, NX);
   psolid(0, [377, 214.2, 413, 233.8]);
   const dt = pc(G, 395, 224, y0 + 0.75, NY);
-  dt.cyl(M.ceramic, 0, 0, 0, 0.2, 0.06, 0.13, 20);
-  dt.cyl(M.pot, 0.5, 0, 0.05, 0.07, 0.22, 0.05, 14);
+  if (model('bowl', 'ground', 395, 224, y0 + 0.75, 0.3, 1.25)) {
+    model('vase1', 'ground', 401.5, 224.6, y0 + 0.75, 0.9);
+    model('vase4', 'ground', 403.6, 223.4, y0 + 0.75, 2.4, 0.8);
+  } else {
+    dt.cyl(M.ceramic, 0, 0, 0, 0.2, 0.06, 0.13, 20);
+    dt.cyl(M.pot, 0.5, 0, 0.05, 0.07, 0.22, 0.05, 14);
+  }
   for (const px of [386.5, 395, 403.5]) pendant(G, px, 224, ceilY, px === 395 ? 1.25 : 1.05, 0.2);
   light(395, 224, y0 + 1.75, 1.3, 9);
 
@@ -383,8 +409,16 @@ export function furnish(ctx) {
     fan(G, s.bed[0], s.lamp[1], ceilY);
     light(s.lamp[0], s.lamp[1], y0 + 1.5, 1.0, 8);
   }
-  pot(G, 419.5, 84.5, y0, 0.5, 0.25, M.potPale, 'fern', 'ground', 0, 0.8);
-  pot(G, 419.5, 326, y0, 0.5, 0.25, M.potPale, 'fern', 'ground', 0, 0.8);
+  for (const [py, yaw] of [
+    [84.5, 0.5],
+    [326, 2.4],
+  ]) {
+    if (model('potplant', 'ground', 419.5, py, y0, yaw, 1.1)) foot(0, 419.5, py, 0.5, 0.5);
+    else pot(G, 419.5, py, y0, 0.5, 0.25, M.potPale, 'fern', 'ground', 0, 0.8);
+  }
+  // a bowl of syngonium on each dresser top and by each tub
+  model('potplant2', 'ground', 368, 131, y0, 1.0, 0.9);
+  model('potplant2', 'ground', 368, 327.5, y0, 3.0, 0.9);
 
   // ================= dressers =================
   cabinet(G, 388.2, 83.6, y0, PY, 4.2, 0.6, 2.3, 6);
@@ -413,7 +447,8 @@ export function furnish(ctx) {
     psolid(0, [b2 - 0.5, c, b2 + 0.5, d]);
     psolid(0, [a, c - 0.5, a + 7, c + 0.5]);
     shower(G, (a + b2) / 2, d - 0.4, y0, NY);
-    pendant(G, s.lamp[0], s.lamp[1], ceilY, 0.7, 0.16);
+    if (!model('pendant', 'ground', s.lamp[0], s.lamp[1], ceilY - 1.17 * 0.9, 0, 0.9)) pendant(G, s.lamp[0], s.lamp[1], ceilY, 0.7, 0.16);
+    model('basket', 'ground', 396, s.van[1] + 5.5, y0, 0.3, 1.5);
     light(s.lamp[0], s.lamp[1], y0 + 2.1, 0.8, 6);
   }
   // washing area
@@ -437,7 +472,7 @@ export function furnish(ctx) {
   const pj = pc(G, 356.8, 142.4, y0, PX);
   pj.box(M.sand, 0, 0, -0.1, 0.68, 0.5, 0.46);
   pj.box(M.timber, 0, 0.5, -0.1, 0.74, 0.04, 0.5);
-  pj.cyl(M.brass, 0, 0.54, -0.12, 0.07, 0.03, 0.05, 16);
+  if (!model('diya', 'ground', 356.2, 142.4, y0 + 0.54, 0)) pj.cyl(M.brass, 0, 0.54, -0.12, 0.07, 0.03, 0.05, 16);
   pj.ball(M.lamp, 0, 0.6, -0.12, 0.028);
   pj.cyl(M.brass, -0.22, 0.54, -0.2, 0.035, 0.22, 0.02, 12);
   pj.cyl(M.brass, 0.22, 0.54, -0.2, 0.035, 0.22, 0.02, 12);
@@ -449,7 +484,7 @@ export function furnish(ctx) {
     G.pbox(M.ivory, [352.8, a, 360.6, b2], y0, y0 + 0.4);
     G.pbox(M.linen, [353.4, a + 0.6, 360.2, b2 - 0.6], y0 + 0.4, y0 + 0.5);
     const p = pc(G, 356.5, a + 3, y0 + 0.5, PY);
-    p.box(M.linenClay, 0, 0, 0, 0.42, 0.34, 0.12, 0.15);
+    if (!model('pillows', 'ground', 356.5, a + 4.2, y0 + 0.5, PX, 0.62)) p.box(M.linenClay, 0, 0, 0, 0.42, 0.34, 0.12, 0.15);
     const p2 = pc(G, 356.5, b2 - 3, y0 + 0.5, NY);
     p2.box(M.linenOlive, 0, 0, 0, 0.42, 0.34, 0.12, -0.15);
   }
@@ -596,7 +631,10 @@ export function furnish(ctx) {
     curtain(Up, 'x', c, a, b2, f + 0.03, 2.28);
   pendant(Up, 396, 192, f + UP_H, 0.7, 0.3);
   light(396, 192, f + 1.9, 1.3, 10);
-  pot(Up, 367.5, 228, f, 0.55, 0.26, M.potPale, 'fern', 'upper', 1, 0.8);
+  if (model('potplant', 'upper', 367.5, 228, f, 1.4, 1.15)) foot(1, 367.5, 228, 0.5, 0.5);
+  else pot(Up, 367.5, 228, f, 0.55, 0.26, M.potPale, 'fern', 'upper', 1, 0.8);
+  model('lantern', 'upper', 424, 228, f, 0.4);
+  model('vase2', 'upper', 411.3, 229.3, f + 0.9, 0.5);
   // bathroom 3 and the storage passage
   wc(Up, 367.5, 243, f, PX, 1);
   Up.pbox(M.glass, [385.9, 233, 386.1, 247], f, f + 2.1);
@@ -663,6 +701,31 @@ export function furnish(ctx) {
     [447, 143],
   ])
     pot(Sl, px, py, f, 0.7, 0.32, M.pot, px > 400 ? 'spike' : 'banana', 'slab', 1, 0.7);
+
+  // lanterns and small clay pots where people sit outside
+  for (const [px, py, yaw] of [
+    [455.5, 175, 0.3],
+    [455.5, 235, 2.0],
+    [334.5, 184, 0.9],
+    [334.5, 222, 2.6],
+  ])
+    model('lantern', 'ground', px, py, y0, yaw);
+  for (const [px, py, yaw, sc] of [
+    [487, 91, 0.2, 1.7],
+    [487, 122, 1.4, 1.4],
+    [487, 289, 2.2, 1.7],
+    [487, 320, 0.7, 1.4],
+  ])
+    model('claypot', 'ground', px, py, y0, yaw, sc);
+  const pvl = P.PAVILION;
+  placeModel(ctx, 'lantern', 'site', pvl.minX + 0.5, pvl.h, pvl.maxZ - 1.2, 0.5);
+  placeModel(ctx, 'lantern', 'site', pvl.minX + 0.5, pvl.h, pvl.minZ + 1.3, 2.1, 0.8);
+  placeModel(ctx, 'pillows', 'site', pvl.maxX - 0.75, pvl.h + 0.52, pvl.maxZ - 1.3, -Math.PI / 2, 0.7);
+  for (const [px, py, yaw] of [
+    [446, 126, 0.4],
+    [470, 284, 1.9],
+  ])
+    model('lantern', 'slab', px, py, F1, yaw);
 
   ctx.lamps = lamps;
 }

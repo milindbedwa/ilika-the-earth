@@ -7,3 +7,5 @@ public/img
 public/og.jpg
 src/image-manifest.json
 brochure/.build
+# downloads for scripts/build-tour-assets.mjs
+.cache

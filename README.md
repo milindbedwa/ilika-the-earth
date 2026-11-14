@@ -49,7 +49,7 @@ npm run brochure   # needs Playwright's Chromium: npx playwright install chromiu
 
 ## 3D tour
 
-`tour.html` is a second page: a walkable 3D model of one farmhouse, opened from the "Take a tour" buttons in the header, the menu and the footer. It is built with three.js (only loaded on that page) and everything in it is generated in the browser: there are no model, texture or sound files to maintain.
+`tour.html` is a second page: a walkable 3D model of one farmhouse, opened from the "Take a tour" buttons in the header, the menu and the footer. It is built with three.js (only loaded on that page) and its leaves, water and sound are generated in the browser.
 
 | File                    | What it holds                                                                                 |
 | ----------------------- | --------------------------------------------------------------------------------------------- |
@@ -60,6 +60,14 @@ npm run brochure   # needs Playwright's Chromium: npx playwright install chromiu
 | `src/tour/materials.js` | Painted textures, sky and water                                                               |
 | `src/tour/nav.js`       | Collision and route finding                                                                   |
 | `src/tour/main.js`      | Lighting, movement, guided tour, interface                                                    |
+
+**Scanned materials, sky and models.** Plaster, stone, timber, cloth, cane, brick, lawn and bark are photo-scanned materials; the sky is a photographed panorama that also lights the scene; some furniture, vases, lanterns and plants are scanned 3D models. They come from [Poly Haven](https://polyhaven.com) and [ambientCG](https://ambientcg.com), both CC0 (free to use, no credit required), and are committed under `public/tour` (`tex`, `sky`, `models`), so the site builds without network access. To change one, edit the lists at the top of `scripts/build-tour-assets.mjs` (materials, skies) or `scripts/tour-models.mjs` (models), then run:
+
+```bash
+npm run tour-assets            # or: npm run tour-assets -- tex | sky | models
+```
+
+That needs network access to `api.polyhaven.com`, `dl.polyhaven.org`, `ambientcg.com` and `acg-download.struffelproductions.com`; downloads are cached in `.cache/`. Phones load 512 px textures, desktops 1024 px. `src/tour/sky.js` loads the sky and `src/tour/models.js` the models.
 
 Plan coordinates in `plan.js` are the drawing units of `public/svg/plan-ground.svg` (3.5 units to the foot), so a wall can be moved by reading its position straight off the SVG.
 

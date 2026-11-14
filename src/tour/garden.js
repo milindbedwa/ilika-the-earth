@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import * as P from './plan.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { rng } from './materials.js';
+import { placeModel } from './models.js';
 
 const { X, Z, PLINTH, CEIL, F1, PARAPET, UP_H } = P;
 
@@ -168,7 +169,7 @@ function creeper() {
 }
 
 // trunk with a slight sweep, and optional boughs
-function trunkGeo(h, r0, r1, bend, boughs = 0, r = null) {
+function trunkGeo(h, r0, r1, bend, boughs = 0, r = null, vLen = h) {
   const parts = [];
   const g = new THREE.CylinderGeometry(r1, r0, h, 10, 8);
   const p = g.attributes.position;
@@ -195,7 +196,7 @@ function trunkGeo(h, r0, r1, bend, boughs = 0, r = null) {
   }
   const m = parts.length > 1 ? mergeGeometries(parts) : g;
   const uv = m.attributes.uv;
-  for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getY(i) * h * 0.5, uv.getX(i) * r0 * 6);
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * r0 * 12.6, uv.getY(i) * vLen);
   m.computeVertexNormals();
   return m;
 }
@@ -231,7 +232,7 @@ export function plantGarden(ctx) {
     spike: { g: rosette(r, { n: lite ? 26 : 42, len: 1.0, wid: 0.04, lean0: 0.04, lean1: 1.05, seg: 4, rings: 3, fold: 0.5 }), m: M.reed },
     creeper: { g: creeper(), m: M.vine },
     palm: { g: palmCrown(r), m: M.frond },
-    palmTrunk: { g: trunkGeo(1, 0.17, 0.11, 0.08), m: M.bark },
+    palmTrunk: { g: trunkGeo(1, 0.17, 0.11, 0.08, 0, null, 7), m: M.palmBark },
     treeA: { g: canopy(r, { clumps: 7, spread: 3.4, rad: 1.5, y0: 3.6, card: 1.75, per: lite ? 14 : 26 }), m: M.leafSpray },
     treeB: { g: canopy(r, { clumps: 5, spread: 2.8, rad: 1.35, y0: 3.3, card: 1.65, per: lite ? 14 : 26 }), m: M.leafSpray },
     treeTrunk: { g: trunkGeo(3.9, 0.2, 0.13, 0.1, 4, r), m: M.bark },
@@ -420,6 +421,44 @@ export function plantGarden(ctx) {
     [282, 326, 366.5],
   ])
     bed(X(a), Z(px), X(b), Z(px), 10, F1 + 0.42, 'slab', ['agave', 'fern', 'spike'], 0.8, 0.1);
+
+  // --- scanned plants: clumps of fern and calathea through the beds, young trees along the walls ---
+  const clump = (name, x, z, y = 0, group = 'site', s = 1) => placeModel(ctx, name, group, x, y, z, r() * 6.283, s * (0.8 + r() * 0.5));
+  const line = (name, x0, z0, x1, z1, n, y = 0, group = 'site', s = 1) => {
+    for (let i = 0; i < n; i++) {
+      const k = (i + 0.5) / n;
+      clump(name, x0 + (x1 - x0) * k + (r() - 0.5) * 0.4, z0 + (z1 - z0) * k + (r() - 0.5) * 0.4, y, group, s);
+    }
+  };
+  const q = lite ? 0.6 : 1;
+  // entrance beds and the planted jaali courts
+  line('fern', X(84), Z(339.5), X(166), Z(339.5), 5 * q);
+  line('calathea', X(240), Z(339.5), X(328), Z(339.5), 5 * q);
+  line('calathea', X(84), Z(352.5), X(130), Z(352.5), 3, 0.3, 'ground', 0.8);
+  line('fern', X(281), Z(352.5), X(326), Z(352.5), 3, 0.3, 'ground', 0.8);
+  // pool front and the ends of the house
+  line('fern', X(166), Z(521), X(176), Z(523), 2, 0, 'site', 0.7);
+  line('calathea', X(236), Z(523), X(244), Z(521), 2, 0, 'site', 0.7);
+  line('fern', X(60), Z(370), X(60), Z(425), 3 * q);
+  line('calathea', X(352), Z(465), X(352), Z(498), 2);
+  // around the pavilion
+  line('fern', pv.minX + 0.6, pv.maxZ + 0.9, pv.maxX - 0.4, pv.maxZ + 0.9, 3 * q);
+  line('calathea', pv.minX + 0.6, pv.minZ - 0.9, pv.maxX - 0.4, pv.minZ - 0.9, 3 * q);
+  // borders: ground cover in front, young pachira trees against the wall
+  line('fern', pl.minX + 2, pl.maxZ - 2.3, pl.maxX - 2, pl.maxZ - 2.3, 9 * q);
+  line('calathea', pl.minX + 2, pl.minZ + 2.3, pl.maxX - 2, pl.minZ + 2.3, 9 * q);
+  line('fern', pl.maxX - 2.3, pl.minZ + 3, pl.maxX - 2.3, pl.maxZ - 3, 7 * q);
+  for (const [x, z, yaw] of [
+    [-12, pl.maxZ - 0.75, 0],
+    [3, pl.maxZ - 0.75, Math.PI],
+    [15, pl.maxZ - 0.75, 0],
+    [-12, pl.minZ + 0.75, Math.PI],
+    [2, pl.minZ + 0.75, 0],
+    [pl.maxX - 0.75, -10, Math.PI / 2],
+    [pl.maxX - 0.75, 8, -Math.PI / 2],
+    [pl.minX + 0.75, 6, Math.PI / 2],
+  ])
+    placeModel(ctx, 'pachira', 'site', x, 0, z, yaw, 1.15);
 
   ctx.plant = add;
   ctx.plantFlush = () => {

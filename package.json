@@ -10,7 +10,8 @@
     "prebuild": "npm run images",
     "build": "vite build",
     "preview": "vite preview",
-    "brochure": "node scripts/build-brochure.mjs"
+    "brochure": "node scripts/build-brochure.mjs",
+    "tour-assets": "node scripts/build-tour-assets.mjs"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",
@@ -19,7 +20,11 @@
     "three": "^0.187.0"
   },
   "devDependencies": {
+    "@gltf-transform/core": "^4.5.1",
+    "@gltf-transform/extensions": "^4.5.1",
+    "@gltf-transform/functions": "^4.5.1",
     "@phosphor-icons/core": "^2.1.1",
+    "meshoptimizer": "^1.3.0",
     "qrcode": "^1.5.4",
     "sharp": "^0.35.5",
     "svgo": "^4.1.0",

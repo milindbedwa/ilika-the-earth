@@ -1,0 +1,14 @@
+{
+  "day": {
+    "sunU": 0.5996,
+    "sunElevation": 19.3,
+    "gain": 0.6,
+    "below": 6
+  },
+  "dusk": {
+    "sunU": 0.6336,
+    "sunElevation": 3.1,
+    "gain": 0.32,
+    "below": 6
+  }
+}
