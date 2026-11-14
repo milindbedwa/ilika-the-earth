@@ -219,7 +219,8 @@ function writeHDR(file, w, h, data) {
 const SKIES = [
   // wb: white balance, as a camera set for warm evening light would record it
   { name: 'day', id: 'qwantani_late_afternoon_puresky', gain: 0.6, wb: [1.14, 1.0, 0.8], ground: [0.62, 0.5, 0.36] },
-  { name: 'dusk', id: 'belfast_sunset_puresky', gain: 0.32, wb: [1.08, 1.0, 0.92], ground: [0.3, 0.22, 0.17] },
+  // twilight, just after sunset: the sky is the only daylight left, and the lamps take over
+  { name: 'dusk', id: 'qwantani_dusk_2_puresky', gain: 0.2, wb: [0.95, 0.97, 1.12], ground: [0.1, 0.085, 0.09] },
 ];
 // rows of the panorama kept for the visible sky: zenith down to this many degrees below the horizon
 const SKY_BELOW = 6;

@@ -108,14 +108,18 @@ async function boot() {
   const hemi = new THREE.HemisphereLight('#e6ecf2', '#c9a989', 0.06); // a whisper of bounce from the ground
   scene.add(hemi);
   scene.fog = new THREE.Fog('#e9d2b6', 40, 185);
-  const lampLights = ctx.lamps.slice(0, lite ? 6 : 12).map((l) => {
-    const pl = new THREE.PointLight('#ffc88f', 0, l.dist, 1.6);
-    pl.position.set(l.x, l.y, l.z);
-    pl.userData.power = l.power;
-    pl.visible = false;
-    scene.add(pl);
-    return pl;
-  });
+  // every room's lamp on desktops; the eight that matter most on phones
+  const lampLights = [...ctx.lamps]
+    .sort((a, b) => b.power * b.dist - a.power * a.dist)
+    .slice(0, lite ? 8 : 12)
+    .map((l) => {
+      const pl = new THREE.PointLight('#ffc88f', 0, l.dist, 1.6);
+      pl.position.set(l.x, l.y, l.z);
+      pl.userData.power = l.power;
+      pl.visible = false;
+      scene.add(pl);
+      return pl;
+    });
   // Day and dusk. The sky photo supplies the soft light from all around; the sun is a lamp placed
   // where the photo's sun stands, because only a lamp can cast the shadows.
   const LIGHT = {
@@ -133,19 +137,22 @@ async function boot() {
       top: '#5d8fc6',
       mid: '#dcd6c8',
     },
+    // twilight: the sky is dim and blue, the last warmth is low in the west, and the house glows
     dusk: {
       sky: 'dusk',
-      minElev: 9,
-      sun: '#ff9a62',
-      sunI: 2.2,
-      hemi: 0.05,
-      glow: '#ffb27a',
-      haze: '#b9a7ac',
-      env: 0.5,
-      exp: 1.3,
-      pool: 0.25,
-      top: '#6f78a0',
-      mid: '#d9b9b0',
+      minElev: 10,
+      sun: '#ff9f7a',
+      sunI: 0.8,
+      hemi: 0.02,
+      glow: '#000000',
+      haze: '#3f4260',
+      env: 0.15,
+      skyK: 0.3,
+      exp: 1.5,
+      pool: 0.08,
+      poolGlow: [0.1, 0.62, 0.66],
+      top: '#1f2748',
+      mid: '#45415f',
     },
   };
   let dusk = false;
@@ -171,7 +178,7 @@ async function boot() {
     u.uMap.value = s.map;
     u.uShift.value = s.shift;
     u.uV0.value = s.v0;
-    u.uGain.value = s.gain;
+    u.uGain.value = s.gain * (L.skyK || 1);
     u.uHaze.value.set(L.haze);
     u.uSunCol.value.set(L.glow);
     u.uSun.value.copy(sunDirection(s.elevation));
@@ -184,10 +191,11 @@ async function boot() {
     w.uHorizon.value.set(L.mid);
     w.uSunCol.value.set(L.glow);
     w.uLight.value = L.pool;
+    w.uGlow.value.fromArray(L.poolGlow || [0, 0, 0]);
     M.setDusk(isDusk ? 1 : 0);
     for (const pl of lampLights) {
       pl.visible = isDusk;
-      pl.intensity = isDusk ? 7 * pl.userData.power : 0;
+      pl.intensity = isDusk ? 11 * pl.userData.power : 0;
     }
     scene.environment = s.env;
     scene.environmentIntensity = L.env;
@@ -650,8 +658,19 @@ async function boot() {
   $('#btn-info').addEventListener('click', () => openPanel('info'));
   $('#btn-reset').addEventListener('click', reset);
   $('#btn-light').addEventListener('click', (e) => {
-    setLight(!dusk);
-    e.currentTarget.setAttribute('aria-pressed', dusk);
+    // day turns to evening behind a short fade
+    const btn = e.currentTarget;
+    const to = !dusk;
+    btn.setAttribute('aria-pressed', to);
+    fadeEl.classList.add('is-on');
+    setTimeout(
+      async () => {
+        await setLight(to);
+        await tick();
+        fadeEl.classList.remove('is-on');
+      },
+      reduce ? 30 : 460,
+    );
   });
   const amb = new Ambience();
   $('#btn-sound').addEventListener('click', (e) => {
@@ -713,7 +732,7 @@ async function boot() {
       (me.lv
         ? ex < 429 && ey > 152.5 && ey < 255
         : (ex < 429 && ey > 78.5 && ey < 331) || (ex < 484.5 && (ey < 134.4 || ey > 276) && ey > 78.5 && ey < 331));
-    const expT = baseExp * (inside ? 1.75 : 1.15);
+    const expT = baseExp * (inside ? (dusk ? 0.8 : 1.75) : 1.15);
     renderer.toneMappingExposure += (expT - renderer.toneMappingExposure) * Math.min(1, dt * 1.6);
     if (!reduce) {
       ctx.water.material.uniforms.uTime.value = time;

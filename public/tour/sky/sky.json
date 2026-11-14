@@ -6,9 +6,9 @@
     "below": 6
   },
   "dusk": {
-    "sunU": 0.6336,
-    "sunElevation": 3.1,
-    "gain": 0.32,
+    "sunU": 0.6005,
+    "sunElevation": 13.4,
+    "gain": 0.2,
     "below": 6
   }
 }

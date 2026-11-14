@@ -516,10 +516,19 @@ export function makeMaterials({ aniso = 4, lite = false, onProgress = () => {} }
 
   if (!total) resolve();
   M.sway = sway;
+  // Evening: lamps and step lights come up, and everything a lamp would light from inside the
+  // rooms (the pale interior walls, ceilings, sheer curtains) takes a warm glow, so the house
+  // reads as lit from within when seen from the garden.
+  const glow = new THREE.Color('#ffae6a');
+  for (const m of [M.ivory, M.ceiling, M.sheer]) m.emissive = glow.clone();
   M.setDusk = (k) => {
-    M.lamp.emissiveIntensity = 0.25 + k * 2.4;
-    M.led.emissiveIntensity = 0.4 + k * 3.2;
+    M.lamp.emissiveIntensity = 0.25 + k * 4;
+    M.led.emissiveIntensity = 0.4 + k * 5.5;
+    M.ivory.emissiveIntensity = k * 0.13;
+    M.ceiling.emissiveIntensity = k * 0.24;
+    M.sheer.emissiveIntensity = k * 0.8;
   };
+  M.setDusk(0);
   return M;
 }
 
@@ -536,6 +545,7 @@ export function makeWater(w, d, depth) {
       uSky: { value: new THREE.Color('#6fa3d6') },
       uHorizon: { value: new THREE.Color('#e9dcc8') },
       uLight: { value: 1 },
+      uGlow: { value: new THREE.Vector3() },
       uHalf: { value: new THREE.Vector2(w / 2, d / 2) },
       uC: { value: new THREE.Vector2() },
       uDepth: { value: depth },
@@ -544,7 +554,7 @@ export function makeWater(w, d, depth) {
       void main(){ vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`,
     fragmentShader: `
       varying vec3 vW;
-      uniform float uTime, uLight, uDepth; uniform vec3 uSun, uSunCol, uSky, uHorizon; uniform vec2 uHalf, uC;
+      uniform float uTime, uLight, uDepth; uniform vec3 uSun, uSunCol, uSky, uHorizon, uGlow; uniform vec2 uHalf, uC;
       // slope of the surface: a few crossing swells and the finer chop from the inlets
       vec2 slope(vec2 p){
         float t = uTime;
@@ -608,6 +618,8 @@ export function makeWater(w, d, depth) {
         // water takes red out first: the longer the path, the bluer and greener what is seen through it
         vec3 absorb = exp(-t * vec3(0.52, 0.085, 0.07));
         vec3 under = base * lit * absorb * uLight + vec3(0.02, 0.16, 0.18) * (1.0 - exp(-t * 0.35)) * uLight;
+        // underwater lamps in the evening: the whole body of water glows
+        under += uGlow * (0.55 + 0.45 * base * lit) * (0.6 + 0.4 * exp(-t * 0.5));
         // the sky and the sun on the surface
         float fres = 0.02 + 0.98 * pow(1.0 - max(dot(n, v), 0.0), 5.0);
         vec3 r = reflect(-v, n);
