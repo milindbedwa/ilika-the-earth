@@ -67,6 +67,8 @@ npm run brochure   # needs Playwright's Chromium: npx playwright install chromiu
 npm run tour-assets            # or: npm run tour-assets -- tex | sky | models
 ```
 
+The bed and the sofa were generated for this villa with Higgsfield (text to 3D); their source files are kept in `scripts/tour-sources` and packed by the same command. The sofa is a bare shape that the tour dresses in the scanned linen.
+
 That needs network access to `api.polyhaven.com`, `dl.polyhaven.org`, `ambientcg.com` and `acg-download.struffelproductions.com`; downloads are cached in `.cache/`. Phones load 512 px textures, desktops 1024 px. `src/tour/sky.js` loads the sky and `src/tour/models.js` the models.
 
 Plan coordinates in `plan.js` are the drawing units of `public/svg/plan-ground.svg` (3.5 units to the foot), so a wall can be moved by reading its position straight off the SVG.

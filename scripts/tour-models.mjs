@@ -30,6 +30,9 @@ export const MODELS = {
   diya: { id: 'brass_diya_lantern', tris: 4000, tex: 256 },
   lantern: { id: 'wooden_lantern_01', tris: 5000, tex: 256 },
   pendant: { id: 'modern_ceiling_lamp_01', tris: 4000, tex: 256 },
+  // generated for this villa (Higgsfield text-to-3D); the source .glb files are kept in scripts/tour-sources
+  bed: { file: 'bed.glb', tris: 16000, tex: 1024 },
+  sofa: { file: 'sofa.glb', tris: 14000 },
 };
 
 export async function buildModels({ cache, out, curl, json }) {
@@ -41,14 +44,24 @@ export async function buildModels({ cache, out, curl, json }) {
   const info = {};
   let total = 0;
   for (const [name, m] of Object.entries(MODELS)) {
-    const src = path.join(cache, 'ph-models', m.id);
-    const files = json(`https://api.polyhaven.com/files/${m.id}`, path.join(src, 'files.json'));
-    const g = files.gltf['1k'].gltf;
-    const main = curl(g.url, path.join(src, path.basename(g.url)));
-    for (const [rel, f] of Object.entries(g.include || {})) curl(f.url, path.join(src, rel));
-    const meta = json(`https://api.polyhaven.com/info/${m.id}`, path.join(src, 'info.json'));
+    let main;
+    let polycount = m.tris;
+    if (m.file) {
+      main = path.join(import.meta.dirname, 'tour-sources', m.file);
+      if (!fs.existsSync(main)) {
+        console.log(`model ${name}: ${m.file} not in scripts/tour-sources, skipped`);
+        continue;
+      }
+    } else {
+      const src = path.join(cache, 'ph-models', m.id);
+      const files = json(`https://api.polyhaven.com/files/${m.id}`, path.join(src, 'files.json'));
+      const g = files.gltf['1k'].gltf;
+      main = curl(g.url, path.join(src, path.basename(g.url)));
+      for (const [rel, f] of Object.entries(g.include || {})) curl(f.url, path.join(src, rel));
+      polycount = json(`https://api.polyhaven.com/info/${m.id}`, path.join(src, 'info.json')).polycount || m.tris;
+    }
     const doc = await io.read(main);
-    const ratio = Math.min(1, m.tris / (meta.polycount || m.tris));
+    const ratio = Math.min(1, m.tris / polycount);
     await doc.transform(
       dedup(),
       flatten(),
@@ -63,8 +76,8 @@ export async function buildModels({ cache, out, curl, json }) {
     await io.write(file, doc);
     const size = fs.statSync(file).size;
     total += size;
-    info[name] = { source: m.id, kB: Math.round(size / 1024) };
-    console.log(`model ${name.padEnd(12)} ${m.id.padEnd(28)} ${(size / 1024).toFixed(0).padStart(5)} kB`);
+    info[name] = { source: m.id || m.file, kB: Math.round(size / 1024) };
+    console.log(`model ${name.padEnd(12)} ${(m.id || m.file).padEnd(28)} ${(size / 1024).toFixed(0).padStart(5)} kB`);
   }
   console.log(`models: ${Object.keys(info).length} files, ${(total / 1e6).toFixed(2)} MB`);
 }

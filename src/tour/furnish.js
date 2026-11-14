@@ -45,6 +45,22 @@ export function furnish(ctx) {
 
   // ---------- pieces ----------
   function sofa(b, px, py, y, yaw, len = 2.3) {
+    if (model('sofa', y > 2 ? 'upper' : 'ground', px, py, y, yaw, len / 2.3)) {
+      // a pair of terracotta pillows at one end
+      const lx = -len * 0.3;
+      placeModel(
+        ctx,
+        'pillows',
+        y > 2 ? 'upper' : 'ground',
+        X(py) + Math.cos(yaw) * lx + Math.sin(yaw) * 0.08,
+        y + 0.43,
+        Z(px) - Math.sin(yaw) * lx + Math.cos(yaw) * 0.08,
+        yaw,
+        0.55,
+      );
+      blob(b, px, py, y, len, 0.95, yaw);
+      return foot(y > 2 ? 1 : 0, px, py, len, 0.95, yaw);
+    }
     const p = pc(b, px, py, y, yaw);
     p.box(M.timber, 0, 0.04, 0, len, 0.1, 0.92);
     p.box(M.linen, 0, 0.14, 0.04, len - 0.04, 0.26, 0.84);
@@ -118,6 +134,10 @@ export function furnish(ctx) {
     p.cyl(M.lamp, 0, 0.22, 0, 0.12, 0.17, 0.085, 16);
   }
   function bed(b, px, py, y, yaw) {
+    if (model('bed', 'ground', px, py, y, yaw)) {
+      blob(b, px, py, y, 2.0, 2.2, yaw);
+      return foot(0, px, py, 2.0, 2.2, yaw);
+    }
     const p = pc(b, px, py, y, yaw);
     p.box(M.timber, 0, 0.06, 0, 2.0, 0.2, 2.16);
     p.box(M.timberDark, 0, 0, 0, 1.7, 0.06, 1.8);
