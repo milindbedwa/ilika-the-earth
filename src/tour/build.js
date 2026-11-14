@@ -426,7 +426,25 @@ export function buildHouse(M, opts = {}) {
   // ---------- first-floor slab, terraces and parapets ----------
   const c0 = PLINTH + CEIL;
   // keep the slab edge just inside the outer wall faces
-  const inset = (r) => [Math.max(r[0], 361), Math.max(r[1], 77.6), Math.min(r[2], 485.4), Math.min(r[3], 331.6)];
+  // Every outer edge of the slab stops just short of the wall face, so the plaster reads as one
+  // seamless surface from plinth to parapet. Edges shared with a neighbouring piece stay put.
+  const inset = (r) => {
+    const touches = (side) =>
+      P.ROOF.some((q) => {
+        if (q === r) return false;
+        if (side === 0) return q[2] === r[0] && q[1] < r[3] && q[3] > r[1];
+        if (side === 2) return q[0] === r[2] && q[1] < r[3] && q[3] > r[1];
+        if (side === 1) return q[3] === r[1] && q[0] < r[2] && q[2] > r[0];
+        return q[1] === r[3] && q[0] < r[2] && q[2] > r[0];
+      });
+    const k = 0.9; // about 80 mm
+    return [
+      Math.max(touches(0) ? r[0] : r[0] + k, 361),
+      Math.max(touches(1) ? r[1] : r[1] + k, 77.6),
+      Math.min(touches(2) ? r[2] : r[2] - k, 485.4),
+      Math.min(touches(3) ? r[3] : r[3] - k, 331.6),
+    ];
+  };
   for (const r of P.ROOF) B.slab.pbox(M.ceiling, inset(r), c0, c0 + 0.08);
   for (const r of [P.ROOF[0], P.ROOF[1], P.ROOF[2], [362, 135.5, 430, 152.5], [362, 255, 430, 276], P.ROOF[4], P.ROOF[5], P.ROOF[6]])
     B.slab.pbox(M.deck, inset(r), c0 + 0.08, F1);
